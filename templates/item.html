@@ -1,0 +1,8 @@
+{{define "item"}} {{ template "header" }}
+
+<div class="jumbotron pt-4 pb-4">
+  <h1 class="display-3">{{ .Item.Name }}</h1>
+  <p class="lead">{{ .Item.Desc }}</p>
+</div>
+
+{{ template "footer" }} {{end}}

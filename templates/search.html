@@ -1,4 +1,4 @@
-{{define "products"}} {{ template "header" }}
+{{define "search"}} {{ template "header" }}
 
 
 <div class="jumbotron pt-4 pb-4">
@@ -13,7 +13,7 @@
 </ol>
 
 <div class="row">
-  {{range .Products}}
+  {{range .Items}}
 
   <div class="col-4 mb-4">
     <div class="card">
@@ -21,7 +21,7 @@
       <div class="card-body">
         <h4 class="card-title">{{.Name}}</h4>
         <p class="card-text">{{.Desc}}</p>
-        <a href="#" class="btn btn-primary">Go somewhere</a>
+        <a href="/0123456789" class="btn btn-primary">Go somewhere</a>
       </div>
     </div>
   </div>

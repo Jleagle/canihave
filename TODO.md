@@ -1,0 +1,1 @@
+- add validation on item url

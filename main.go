@@ -19,9 +19,8 @@ func main() {
 
 	r := chi.NewRouter()
 
-	r.Get("/", comingSoonHandler)
-	r.Get("/products", productsHandler)
-	r.Get("/products/{url}", productHandler)
+	r.Get("/", searchHandler)
+	r.Get("/{url}", itemHandler)
 
 	workDir, _ := os.Getwd()
 	filesDir := filepath.Join(workDir, "assets")
@@ -86,4 +85,15 @@ func connectToSQL() (*sql.DB, error) {
 	}
 
 	return db, err
+}
+
+// item is the database row
+type item struct {
+	ID          string
+	DateUpdated string
+	DateCreated string
+	TimesAdded  string
+	Name        string
+	Desc        string
+	Source      string
 }
