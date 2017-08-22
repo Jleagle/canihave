@@ -1,4 +1,4 @@
-CREATE TABLE `item` (
+CREATE TABLE `items` (
   `id` varchar(10) NOT NULL DEFAULT '',
   `date_created` date NOT NULL,
   `date_updated` date NOT NULL,
