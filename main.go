@@ -20,6 +20,7 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Get("/", searchHandler)
+	r.Get("/ajax", ajaxHandler)
 	r.Get("/{url}", itemHandler)
 
 	workDir, _ := os.Getwd()
@@ -39,7 +40,7 @@ func returnTemplate(w http.ResponseWriter, page string, pageData interface{}) {
 	folder := path.Dir(file)
 
 	// Load templates needed
-	t, err := template.ParseFiles(folder+"/templates/header.html", folder+"/templates/footer.html", folder+"/templates/"+page+".html")
+	t, err := template.ParseFiles(folder+"/templates/header.html", folder+"/templates/footer.html", folder+"/templates/card.html", folder+"/templates/"+page+".html")
 	if err != nil {
 		panic(err)
 	}
@@ -96,4 +97,8 @@ type item struct {
 	Name        string
 	Desc        string
 	Source      string
+}
+
+type source struct {
+	Name string
 }

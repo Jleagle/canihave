@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 
 	"github.com/go-chi/chi"
 )
@@ -12,6 +13,13 @@ import (
 func itemHandler(w http.ResponseWriter, r *http.Request) {
 
 	url := chi.URLParam(r, "url")
+
+	// Validate item URL
+	match, _ := regexp.MatchString("^[A-Z0-9]{10}$", url)
+	if !match {
+		returnTemplate(w, "404", nil)
+		return
+	}
 
 	db, _ := connectToSQL()
 	defer db.Close()
@@ -37,6 +45,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	itemVars.Item = item
 
 	returnTemplate(w, "item", itemVars)
+	return
 }
 
 type itemVars struct {
