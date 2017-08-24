@@ -12,6 +12,11 @@ import (
 
 func itemHandler(w http.ResponseWriter, r *http.Request) {
 
+	// amazon.GetItems([]string{
+	// 	"B01KMXS2TK",
+	// 	"B00KAPFOEM",
+	// })
+
 	url := chi.URLParam(r, "url")
 
 	// Validate item URL

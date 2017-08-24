@@ -20,6 +20,7 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Get("/", searchHandler)
+	r.Post("/", searchHandler)
 	r.Get("/ajax", ajaxHandler)
 	r.Get("/{url}", itemHandler)
 
