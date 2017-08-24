@@ -100,6 +100,14 @@ type item struct {
 	Source      string
 }
 
+func (i item) GetUKLink() string {
+	return "https://www.amazon.co.uk/dp/" + i.ID + "?tag=canihaveone00-21"
+}
+
+func (i item) GetUKPixel() string {
+	return "//ir-uk.amazon-adsystem.com/e/ir?t=canihaveone00-21&l=am2&o=2&a=B000J34HN4"
+}
+
 type source struct {
 	Name string
 }

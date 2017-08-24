@@ -5,18 +5,9 @@
   <p class="lead">{{ .Item.Desc }}</p>
 </div>
 
-<ul class="nav nav-pills mb-4 nav-fill">
+<ul class="nav nav-pills mb-4">
   <li class="nav-item">
-    <a class="nav-link active" href="#">Active</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="#">Link</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="#">Link</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link disabled" href="#">Disabled</a>
+    <a class="nav-link active" href="{{.Item.GetUKLink}}">Buy Item</a>
   </li>
 </ul>
 
@@ -52,5 +43,7 @@
 
   </div>
 </div>
+
+<img src="{{.Item.GetUKPixel}}" class="pixel" alt="" />
 
 {{ template "footer" }} {{end}}

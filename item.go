@@ -7,15 +7,16 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/Jleagle/canihave/amazon"
 	"github.com/go-chi/chi"
 )
 
 func itemHandler(w http.ResponseWriter, r *http.Request) {
 
-	// amazon.GetItems([]string{
-	// 	"B01KMXS2TK",
-	// 	"B00KAPFOEM",
-	// })
+	amazon.GetItems([]string{
+		"B01KMXS2TK",
+		"B00KAPFOEM",
+	})
 
 	url := chi.URLParam(r, "url")
 
@@ -48,6 +49,8 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	// Return template
 	itemVars := itemVars{}
 	itemVars.Item = item
+
+	fmt.Printf("%v", itemVars)
 
 	returnTemplate(w, "item", itemVars)
 	return

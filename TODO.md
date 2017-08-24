@@ -9,3 +9,6 @@
 Add links to
 - https://www.facebook.com/pleasecanihaveone/
 - https://twitter.com/Canihave_one
+
+
+- Use different country affiliate links for different users
