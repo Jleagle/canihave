@@ -4,14 +4,23 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Jleagle/canihave/helpers"
+	cache "github.com/patrickmn/go-cache"
 )
 
 var perPage = 12
 var maxPage = 10
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
+
+	c := cache.New(5*time.Minute, 10*time.Minute)
+
+	foo, found := c.Get("foo")
+	if found {
+		//fmt.Println(foo)
+	}
 
 	query := r.URL.Query()
 	page := query.Get("page")

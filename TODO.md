@@ -1,10 +1,9 @@
 - google site map
-- Link to smile dot
+- Link to smile dot, talk about smile on info page
 - Add amazon reviews with iframe
-- Country drop down?
+- Country drop down
 - Pay with amazon?
 - Link social networks automatically
-
 
 Add links to
 - https://www.facebook.com/pleasecanihaveone/
@@ -12,3 +11,9 @@ Add links to
 
 
 - Use different country affiliate links for different users
+- check for inserting dupe items into mysql
+- add link redirecting to aff links to track stuff
+- add sorting options, hits, time etc, - add indexes
+
+- max page should be infinite but max page to skip to should be 10
+- pass js files through to the template so they are not on every page

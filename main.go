@@ -22,7 +22,7 @@ func main() {
 	r.Get("/", searchHandler)
 	r.Post("/", searchHandler)
 	r.Get("/ajax", ajaxHandler)
-	r.Get("/{url}", itemHandler)
+	r.Get("/{id}", itemHandler)
 
 	workDir, _ := os.Getwd()
 	filesDir := filepath.Join(workDir, "assets")
@@ -89,25 +89,11 @@ func connectToSQL() (*sql.DB, error) {
 	return db, err
 }
 
-// item is the database row
-type item struct {
-	ID          string
-	DateUpdated string
-	DateCreated string
-	TimesAdded  string
-	Name        string
-	Desc        string
-	Source      string
-}
-
-func (i item) GetUKLink() string {
-	return "https://www.amazon.co.uk/dp/" + i.ID + "?tag=canihaveone00-21"
-}
-
-func (i item) GetUKPixel() string {
-	return "//ir-uk.amazon-adsystem.com/e/ir?t=canihaveone00-21&l=am2&o=2&a=B000J34HN4"
-}
-
 type source struct {
 	Name string
+}
+
+type errorVars struct {
+	HTTPCode int
+	Message  string
 }

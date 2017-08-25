@@ -7,23 +7,28 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/Jleagle/canihave/amazon"
 	"github.com/go-chi/chi"
 )
 
 func itemHandler(w http.ResponseWriter, r *http.Request) {
 
-	amazon.GetItems([]string{
-		"B01KMXS2TK",
-		"B00KAPFOEM",
-	})
+	// getItems([]string{
+	// 	"B01KMXS2TK",
+	// 	"B00KAPFOEM",
+	// })
 
-	url := chi.URLParam(r, "url")
+	// Get the string associated with the key "foo" from the cache
 
-	// Validate item URL
-	match, _ := regexp.MatchString("^[A-Z0-9]{10}$", url)
+	// return
+
+	//importItems()
+
+	id := chi.URLParam(r, "id")
+
+	// Validate item ID
+	match, _ := regexp.MatchString("^[A-Z0-9]{10}$", id)
 	if !match {
-		returnTemplate(w, "404", nil)
+		returnTemplate(w, "error", errorVars{HTTPCode: 404, Message: "Invalid Item ID"})
 		return
 	}
 
@@ -32,7 +37,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Get an item
 	item := item{}
-	err := db.QueryRow("SELECT * FROM items WHERE id = ?", url).Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.TimesAdded, &item.Name, &item.Desc, &item.Source)
+	err := db.QueryRow("SELECT * FROM items WHERE id = ?", id).Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.TimesAdded, &item.Name, &item.Desc, &item.Source)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -49,8 +54,6 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	// Return template
 	itemVars := itemVars{}
 	itemVars.Item = item
-
-	fmt.Printf("%v", itemVars)
 
 	returnTemplate(w, "item", itemVars)
 	return
