@@ -4,23 +4,15 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/Jleagle/canihave/helpers"
-	cache "github.com/patrickmn/go-cache"
+	sq "github.com/Masterminds/squirrel"
 )
 
 var perPage = 12
 var maxPage = 10
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
-
-	c := cache.New(5*time.Minute, 10*time.Minute)
-
-	foo, found := c.Get("foo")
-	if found {
-		//fmt.Println(foo)
-	}
 
 	query := r.URL.Query()
 	page := query.Get("page")
@@ -61,15 +53,24 @@ func ajaxHandler(w http.ResponseWriter, r *http.Request) {
 func handleQuery(options queryOptions) []item {
 
 	// Connect to SQL
-	db, _ := connectToSQL()
-	defer db.Close()
+	db := connectToSQL()
+
+	users := sq.Select("*").From("users").Join("emails USING (email_id)")
+
+	active := users.Where(sq.Eq{"deleted_at": nil})
+
+	sql, args, err := active.ToSql()
+
+	fmt.Printf("%v", sql)
+	fmt.Printf("%v", args)
+	fmt.Printf("%v", err)
 
 	// Run the query
-	rows, err := db.Query("SELECT * FROM items ORDER BY date_created DESC LIMIT 12")
-	if err != nil {
-		fmt.Println(err)
+	rows, error := db.Query("SELECT * FROM items ORDER BY date_created DESC LIMIT 12")
+	if error != nil {
+		fmt.Println(error)
 	}
-	defer db.Close()
+	defer rows.Close()
 
 	// Convert to types
 	results := []item{}

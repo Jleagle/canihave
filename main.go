@@ -15,6 +15,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+var database *sql.DB
+
 func main() {
 
 	r := chi.NewRouter()
@@ -41,15 +43,15 @@ func returnTemplate(w http.ResponseWriter, page string, pageData interface{}) {
 	folder := path.Dir(file)
 
 	// Load templates needed
-	t, err := template.ParseFiles(folder+"/templates/header.html", folder+"/templates/footer.html", folder+"/templates/card.html", folder+"/templates/"+page+".html")
-	if err != nil {
-		panic(err)
+	t, error := template.ParseFiles(folder+"/templates/header.html", folder+"/templates/footer.html", folder+"/templates/card.html", folder+"/templates/"+page+".html")
+	if error != nil {
+		panic(error)
 	}
 
 	// Write a respone
-	err = t.ExecuteTemplate(w, page, pageData)
-	if err != nil {
-		panic(err)
+	error = t.ExecuteTemplate(w, page, pageData)
+	if error != nil {
+		panic(error)
 	}
 }
 
@@ -74,19 +76,22 @@ func fileServer(r chi.Router, path string, root http.FileSystem) {
 	}))
 }
 
-func connectToSQL() (*sql.DB, error) {
+func connectToSQL() *sql.DB {
 
-	password := os.Getenv("SQL_PW")
-	if len(password) > 0 {
-		password = ":" + password
+	if database == nil {
+
+		password := os.Getenv("SQL_PW")
+		if len(password) > 0 {
+			password = ":" + password
+		}
+		var error error
+		database, error = sql.Open("mysql", "root"+password+"@tcp(127.0.0.1:3306)/canihave")
+		if error != nil {
+			panic(error.Error())
+		}
 	}
 
-	db, err := sql.Open("mysql", "root"+password+"@tcp(127.0.0.1:3306)/canihave")
-	if err != nil {
-		panic(err.Error())
-	}
-
-	return db, err
+	return database
 }
 
 type source struct {

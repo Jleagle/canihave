@@ -32,23 +32,21 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, _ := connectToSQL()
-	defer db.Close()
+	db := connectToSQL()
 
 	// Get an item
 	item := item{}
-	err := db.QueryRow("SELECT * FROM items WHERE id = ?", id).Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.TimesAdded, &item.Name, &item.Desc, &item.Source)
-	if err != nil {
-		fmt.Println(err)
+	error := db.QueryRow("SELECT * FROM items WHERE id = ? LIMIT 1", id).Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.TimesAdded, &item.Name, &item.Desc, &item.Source)
+	if error != nil {
+		fmt.Println(error)
 	}
-	defer db.Close()
 
 	// Handle some errors
 	switch {
-	case err == sql.ErrNoRows:
+	case error == sql.ErrNoRows:
 		fmt.Fprintf(w, "No such item")
-	case err != nil:
-		log.Fatal(err)
+	case error != nil:
+		log.Fatal(error)
 	}
 
 	// Return template

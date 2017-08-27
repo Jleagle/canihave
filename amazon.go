@@ -8,19 +8,19 @@ import (
 )
 
 func getItems(items []string) {
-	client, err := amazon.NewFromEnvionment()
-	if err != nil {
-		log.Fatal(err)
+	client, error := amazon.NewFromEnvionment()
+	if error != nil {
+		log.Fatal(error)
 	}
-	res, err := client.ItemLookup(amazon.ItemLookupParameters{
+	res, error := client.ItemLookup(amazon.ItemLookupParameters{
 		ResponseGroups: []amazon.ItemLookupResponseGroup{
 			amazon.ItemLookupResponseGroupLarge,
 		},
 		IDType:  amazon.IDTypeASIN,
 		ItemIDs: items,
 	}).Do()
-	if err != nil {
-		log.Fatal(err)
+	if error != nil {
+		log.Fatal(error)
 	}
 	for _, item := range res.Items.Item {
 		fmt.Printf(`-------------------------------
@@ -91,21 +91,20 @@ func importItems() {
 	}
 
 	// Connect to SQL
-	db, _ := connectToSQL()
-	defer db.Close()
+	db := connectToSQL()
 
 	// Prepare statement for inserting data
-	insert, err := db.Prepare("INSERT INTO items (id, date_created, date_updated, `name`, `desc`, source) VALUES (?, ?, ?, ?, ?, ?)")
-	if err != nil {
-		panic(err.Error())
+	insert, error := db.Prepare("INSERT INTO items (id, date_created, date_updated, `name`, `desc`, source) VALUES (?, ?, ?, ?, ?, ?)")
+	if error != nil {
+		panic(error.Error())
 	}
 	defer insert.Close()
 
 	for _, id := range items {
 
-		_, err = insert.Exec(id, "2010-10-10", "2010-10-10", id, id, "source")
-		if err != nil {
-			panic(err.Error())
+		_, error = insert.Exec(id, "2010-10-10", "2010-10-10", id, id, "source")
+		if error != nil {
+			panic(error.Error())
 		}
 	}
 }
