@@ -14,6 +14,8 @@ var maxPage = 10
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 
+	r.ParseForm()
+
 	query := r.URL.Query()
 	page := query.Get("page")
 	pageInt, _ := strconv.Atoi(page)
@@ -22,12 +24,15 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	options := queryOptions{}
 	options.limit = strconv.Itoa(limit)
 	options.page = strconv.Itoa(helpers.Min([]int{pageInt, maxPage}))
-	options.search = query.Get("search")
+	options.search = r.Form.Get("search")
+
+	//fmt.Printf("%v", options.search)
 
 	// Return template
 	vars := searchVars{}
 	vars.Items = handleQuery(options)
 	vars.Page = options.page
+	vars.Search = options.search
 
 	returnTemplate(w, "search", vars)
 }
@@ -46,6 +51,7 @@ func ajaxHandler(w http.ResponseWriter, r *http.Request) {
 	vars := searchVars{}
 	vars.Items = handleQuery(options)
 	vars.Page = options.page
+	vars.Search = options.search
 
 	returnTemplate(w, "search_ajax", vars)
 }
@@ -55,18 +61,22 @@ func handleQuery(options queryOptions) []item {
 	// Connect to SQL
 	db := connectToSQL()
 
-	users := sq.Select("*").From("users").Join("emails USING (email_id)")
+	// Make the query
+	query := sq.Select("*").From("items").OrderBy("date_created DESC").Limit(12)
 
-	active := users.Where(sq.Eq{"deleted_at": nil})
+	if options.search != "" {
+		//query = query.Where("name LIKE ?", "%"+options.search+"%") //todo
+	}
 
-	sql, args, err := active.ToSql()
+	sql, _, error := query.ToSql()
+	if error != nil {
+		fmt.Println(error)
+	}
 
-	fmt.Printf("%v", sql)
-	fmt.Printf("%v", args)
-	fmt.Printf("%v", err)
+	//fmt.Println("%v", sql)
 
 	// Run the query
-	rows, error := db.Query("SELECT * FROM items ORDER BY date_created DESC LIMIT 12")
+	rows, error := db.Query(sql)
 	if error != nil {
 		fmt.Println(error)
 	}
@@ -84,8 +94,9 @@ func handleQuery(options queryOptions) []item {
 }
 
 type searchVars struct {
-	Items []item
-	Page  string
+	Items  []item
+	Page   string
+	Search string
 }
 
 type queryOptions struct {
