@@ -33,6 +33,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Items = handleQuery(options)
 	vars.Page = options.page
 	vars.Search = options.search
+	vars.Javascript = []string{"/assets/search.js"}
 
 	returnTemplate(w, "search", vars)
 }
@@ -62,21 +63,23 @@ func handleQuery(options queryOptions) []item {
 	db := connectToSQL()
 
 	// Make the query
-	query := sq.Select("*").From("items").OrderBy("date_created DESC").Limit(12)
-
+	query := sq.Select("*").From("items")
 	if options.search != "" {
-		//query = query.Where("name LIKE ?", "%"+options.search+"%") //todo
+		query = query.Where("name LIKE ?", "%"+options.search+"%")
 	}
+	query = query.OrderBy("date_created DESC").Limit(12)
 
-	sql, _, error := query.ToSql()
+	sql, args, error := query.ToSql()
 	if error != nil {
 		fmt.Println(error)
 	}
 
-	//fmt.Println("%v", sql)
+	fmt.Println(options.search)
+	fmt.Println(args)
+	fmt.Println(sql)
 
 	// Run the query
-	rows, error := db.Query(sql)
+	rows, error := db.Query(sql, args...)
 	if error != nil {
 		fmt.Println(error)
 	}
@@ -94,9 +97,10 @@ func handleQuery(options queryOptions) []item {
 }
 
 type searchVars struct {
-	Items  []item
-	Page   string
-	Search string
+	Items      []item
+	Page       string
+	Search     string
+	Javascript []string
 }
 
 type queryOptions struct {

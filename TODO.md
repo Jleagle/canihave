@@ -17,3 +17,4 @@ Add links to
 
 - max page should be infinite but max page to skip to should be 10
 - pass js files through to the template so they are not on every page
+- only use js files if needed
