@@ -1,7 +1,7 @@
 - google site map
 - Link to smile dot, talk about smile on info page
 - Add amazon reviews with iframe
-- Country drop down
+- Country drop down (amazon regions)
 - Pay with amazon?
 - Link social networks automatically
 
@@ -18,3 +18,4 @@ Add links to
 - max page should be infinite but max page to skip to should be 10
 - pass js files through to the template so they are not on every page
 - only use js files if needed
+- stop ajax when no more results

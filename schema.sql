@@ -1,11 +1,15 @@
 CREATE TABLE `items` (
   `id` varchar(11) NOT NULL DEFAULT '',
-  `date_created` date NOT NULL,
-  `date_updated` date NOT NULL,
+  `dateCreated` date NOT NULL,
+  `dateUpdated` date NOT NULL,
   `name` varchar(255) NOT NULL,
   `desc` text NOT NULL,
-  `source` int(11) NOT NULL,
-  `node` int(11) NOT NULL
+  `link` varchar(255) NOT NULL,
+  `source` int(11) unsigned NOT NULL,
+  `salesRank` int(11) unsigned NOT NULL,
+  `images` text NOT NULL,
+  `productGroup` varchar(255) NOT NULL DEFAULT '',
+  `productTypeName` varchar(255) NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `sources` (

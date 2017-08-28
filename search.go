@@ -67,7 +67,7 @@ func handleQuery(options queryOptions) []item {
 	if options.search != "" {
 		query = query.Where("name LIKE ?", "%"+options.search+"%")
 	}
-	query = query.OrderBy("date_created DESC").Limit(12)
+	query = query.OrderBy("dateCreated DESC").Limit(12)
 
 	sql, args, error := query.ToSql()
 	if error != nil {
@@ -89,7 +89,7 @@ func handleQuery(options queryOptions) []item {
 	results := []item{}
 	item := item{}
 	for rows.Next() {
-		rows.Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.TimesAdded, &item.Name, &item.Desc, &item.Source)
+		rows.Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.Name, &item.Desc, &item.Source)
 		results = append(results, item)
 	}
 

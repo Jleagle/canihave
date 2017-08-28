@@ -1,9 +1,6 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 
@@ -11,17 +8,6 @@ import (
 )
 
 func itemHandler(w http.ResponseWriter, r *http.Request) {
-
-	// getItems([]string{
-	// 	"B01KMXS2TK",
-	// 	"B00KAPFOEM",
-	// })
-
-	// Get the string associated with the key "foo" from the cache
-
-	// return
-
-	//importItems()
 
 	id := chi.URLParam(r, "id")
 
@@ -32,21 +18,13 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db := connectToSQL()
-
-	// Get an item
 	item := item{}
-	error := db.QueryRow("SELECT * FROM items WHERE id = ? LIMIT 1", id).Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.TimesAdded, &item.Name, &item.Desc, &item.Source)
-	if error != nil {
-		fmt.Println(error)
-	}
+	item.ID = id
+	item.get()
 
-	// Handle some errors
-	switch {
-	case error == sql.ErrNoRows:
-		fmt.Fprintf(w, "No such item")
-	case error != nil:
-		log.Fatal(error)
+	if item.Link != "" {
+		returnTemplate(w, "error", errorVars{HTTPCode: 404, Message: "Can't find item"})
+		return
 	}
 
 	// Return template
