@@ -15,6 +15,13 @@ function checkPagePosition() {
 }
 
 function loadPage(page) {
+    var $results = $('#results');
+
+    if ($results.attr('data-last') != '0') {
+        return
+    }
+
+    var nextPage = +$results.attr('data-page') + 1;
     $.ajax({
         dataType: "html",
         beforeSend: function () {
@@ -22,7 +29,7 @@ function loadPage(page) {
         },
         xhr: function () {
             var xhr = $.ajaxSettings.xhr();
-            
+
             xhr.addEventListener("progress", function (evt) {
                 if (evt.lengthComputable) {
                     var percentComplete = evt.loaded / evt.total * 100;
@@ -41,9 +48,21 @@ function loadPage(page) {
             return xhr;
         },
         type: 'GET',
+        data: {
+            page: nextPage,
+            search: window.atob($results.attr('data-search')),
+        },
         url: "/ajax",
         success: function (data, textStatus, jqXHR) {
-            $("#results").append(data);
+            data = $.trim(data);
+            $data = $(data).attr('data-page', nextPage)
+
+            if (data.length > 0) {
+                $results.append($data);
+                $results.attr('data-page', nextPage)
+            } else {
+                $results.attr('data-last', 1)
+            }
             loading = false;
         }
     });

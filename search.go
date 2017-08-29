@@ -1,37 +1,26 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/Jleagle/canihave/helpers"
-	sq "github.com/Masterminds/squirrel"
+	"github.com/Jleagle/canihave/models"
+	"github.com/Jleagle/canihave/store"
+	"github.com/Masterminds/squirrel"
 )
-
-var perPage = 12
-var maxPage = 10
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 
-	r.ParseForm()
+	search := r.Form.Get("search")
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 
-	query := r.URL.Query()
-	page := query.Get("page")
-	pageInt, _ := strconv.Atoi(page)
-	limit := pageInt * perPage
-
-	options := queryOptions{}
-	options.limit = strconv.Itoa(limit)
-	options.page = strconv.Itoa(helpers.Min([]int{pageInt, maxPage}))
-	options.search = r.Form.Get("search")
-
-	// Return template
 	vars := searchVars{}
-	vars.Items = handleQuery(options)
-	vars.Page = options.page
-	vars.Search = options.search
-	vars.Javascript = []string{"/assets/search.js"}
+	vars.Items = handleQuery(page, search)
+	vars.Search = search
+	vars.Search64 = base64.StdEncoding.EncodeToString([]byte(search))
+	vars.Javascript = []string{"/assets/search.js", "//platform.twitter.com/widgets.js"}
 
 	returnTemplate(w, "search", vars)
 }
@@ -39,49 +28,45 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 func ajaxHandler(w http.ResponseWriter, r *http.Request) {
 
 	query := r.URL.Query()
-	pageInt, _ := strconv.Atoi(query.Get("page"))
+	page, _ := strconv.Atoi(query.Get("page"))
 
-	options := queryOptions{}
-	options.limit = strconv.Itoa(perPage)
-	options.page = strconv.Itoa(helpers.Min([]int{pageInt, maxPage}))
-	options.search = query.Get("search")
-
-	// Return template
 	vars := searchVars{}
-	vars.Items = handleQuery(options)
-	vars.Page = options.page
-	vars.Search = options.search
+	vars.Items = handleQuery(page, query.Get("search"))
 
 	returnTemplate(w, "search_ajax", vars)
 }
 
-func handleQuery(options queryOptions) []item {
+func handleQuery(page int, search string) []models.Item {
 
-	// Connect to SQL
-	db := connectToSQL()
-
-	// Make the query
-	query := sq.Select("*").From("items")
-	if options.search != "" {
-		query = query.Where("name LIKE ?", "%"+options.search+"%")
+	if page < 1 {
+		page = 1
 	}
-	query = query.OrderBy("dateCreated DESC").Limit(12)
+
+	// Make SQL
+	conn := store.GetMysqlConnection()
+	query := squirrel.Select("*").From("items")
+	if search != "" {
+		query = query.Where("name LIKE ?", "%"+search+"%")
+	}
+	fmt.Printf("%v", (page-1)*12)
+	query = query.OrderBy("dateCreated DESC").Limit(12).Offset(uint64((page - 1) * 12))
 
 	sql, args, error := query.ToSql()
 	if error != nil {
 		fmt.Println(error)
 	}
+	fmt.Printf("%v", sql)
 
-	// Run the query
-	rows, error := db.Query(sql, args...)
+	// Run SQL
+	rows, error := conn.Query(sql, args...)
 	if error != nil {
 		fmt.Println(error)
 	}
 	defer rows.Close()
 
 	// Convert to types
-	results := []item{}
-	item := item{}
+	results := []models.Item{}
+	item := models.Item{}
 	for rows.Next() {
 		rows.Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.Name, &item.Desc, &item.Source)
 		results = append(results, item)
@@ -90,16 +75,19 @@ func handleQuery(options queryOptions) []item {
 	return results
 }
 
-type searchVars struct {
-	Items      []item
-	Page       string
-	Search     string
-	Javascript []string
+func s2uint64(i string) uint64 {
+
+	ix, err := strconv.ParseInt(i, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	return uint64(ix)
 }
 
-type queryOptions struct {
-	limit    string
-	page     string
-	search   string
-	category string
+type searchVars struct {
+	Items      []models.Item
+	Page       string
+	Search     string
+	Search64   string
+	Javascript []string
 }

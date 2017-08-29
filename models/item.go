@@ -5,14 +5,14 @@ import (
 	"log"
 	"time"
 
-	sq "github.com/Masterminds/squirrel"
-	"github.com/kr/pretty"
+	"github.com/Jleagle/canihave/store"
+	"github.com/Masterminds/squirrel"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
 	cache "github.com/patrickmn/go-cache"
 )
 
 // item is the database row
-type item struct {
+type Item struct {
 	ID              string
 	DateCreated     string
 	DateUpdated     string
@@ -26,11 +26,11 @@ type item struct {
 	ProductTypeName string
 }
 
-func (i *item) GetUKPixel() string {
+func (i *Item) GetUKPixel() string {
 	return "//ir-uk.amazon-adsystem.com/e/ir?t=canihaveone00-21&l=am2&o=2&a=" + i.ID
 }
 
-func (i *item) get() {
+func (i *Item) Get() {
 
 	if i.ID == "" {
 		log.Fatal("Item needs an id")
@@ -55,7 +55,7 @@ func (i *item) get() {
 	}
 }
 
-func (i *item) getFromMemcache() (found bool) {
+func (i *Item) getFromMemcache() (found bool) {
 
 	return false // todo
 
@@ -69,16 +69,16 @@ func (i *item) getFromMemcache() (found bool) {
 	// return found
 }
 
-func (i *item) getFromMysql() (found bool) {
+func (i *Item) getFromMysql() (found bool) {
 
 	// Make the query
-	query := sq.Select("*").From("items").Where("id = ?", i.ID).Limit(1)
+	query := squirrel.Select("*").From("items").Where("id = ?", i.ID).Limit(1)
 	sql, args, error := query.ToSql()
 	if error != nil {
 		fmt.Println(error)
 	}
 
-	db := connectToSQL()
+	db := store.GetMysqlConnection()
 	err := db.QueryRow(sql, args...).Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Desc, &i.Link, &i.Source, &i.SalesRank, &i.Images, &i.ProductGroup, &i.ProductTypeName)
 	if err != nil {
 		return false
@@ -87,7 +87,7 @@ func (i *item) getFromMysql() (found bool) {
 	return true
 }
 
-func (i *item) getFromAmazon() (found bool) {
+func (i *Item) getFromAmazon() (found bool) {
 
 	client, error := amazon.NewFromEnvionment()
 	if error != nil {
@@ -127,27 +127,26 @@ func (i *item) getFromAmazon() (found bool) {
 	return true
 }
 
-func (i *item) saveToMemcache() {
+func (i *Item) saveToMemcache() {
 
-	c.Set(i.ID, i, cache.DefaultExpiration)
+	x := store.GetGoCache()
+	x.Set(i.ID, i, cache.DefaultExpiration)
 
-	foo, _ := c.Get(i.ID)
-
-	fmt.Printf("%# v", pretty.Formatter(foo))
-
-	return
+	//foo, _ := c.Get(i.ID)
+	// fmt.Printf("%# v", pretty.Formatter(foo))
+	// return
 }
 
-func (i item) saveToMysql() {
+func (i *Item) saveToMysql() {
 
 	// Make query
 	//sql, args, err := sq.Insert("items").Columns("name", "age").Values("moe", 13).Values("larry", sq.Expr("? + 5", 12)).ToSql()
 
-	db := connectToSQL()
+	conn := store.GetMysqlConnection()
 
 	// todo, switch to query builder
 	// Prepare statement for inserting data
-	insert, error := db.Prepare("INSERT INTO items (id, dateCreated, dateUpdated, `name`, `desc`, link, source, salesRank, images, productGroup, productTypeName) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	insert, error := conn.Prepare("INSERT INTO items (id, dateCreated, dateUpdated, `name`, `desc`, link, source, salesRank, images, productGroup, productTypeName) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if error != nil {
 		panic(error.Error())
 	}
@@ -160,7 +159,7 @@ func (i item) saveToMysql() {
 	}
 }
 
-func importItems() bool {
+func ImportItems() bool {
 
 	items := []string{
 		"0735216207",
@@ -208,9 +207,9 @@ func importItems() bool {
 	}
 
 	for _, id := range items {
-		i := item{}
+		i := Item{}
 		i.ID = id
-		i.get()
+		i.Get()
 	}
 
 	return true

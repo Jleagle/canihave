@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"html/template"
 	"log"
 	"net/http"
@@ -10,24 +9,18 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 
 	"github.com/go-chi/chi"
 	_ "github.com/go-sql-driver/mysql"
-	cache "github.com/patrickmn/go-cache"
 )
 
-var database *sql.DB
-var c *cache.Cache
-
 func main() {
-
-	c = cache.New(5*time.Minute, 10*time.Minute)
 
 	r := chi.NewRouter()
 
 	r.Get("/", searchHandler)
 	r.Post("/", searchHandler)
+	r.Get("/info", infoHandler)
 	r.Get("/ajax", ajaxHandler)
 	r.Get("/{id}", itemHandler)
 
@@ -79,24 +72,6 @@ func fileServer(r chi.Router, path string, root http.FileSystem) {
 	r.Get(path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fs.ServeHTTP(w, r)
 	}))
-}
-
-func connectToSQL() *sql.DB {
-
-	if database == nil {
-
-		password := os.Getenv("SQL_PW")
-		if len(password) > 0 {
-			password = ":" + password
-		}
-		var error error
-		database, error = sql.Open("mysql", "root"+password+"@tcp(127.0.0.1:3306)/canihave")
-		if error != nil {
-			panic(error.Error())
-		}
-	}
-
-	return database
 }
 
 type source struct {

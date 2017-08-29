@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/Jleagle/canihave/models"
 	"github.com/go-chi/chi"
 )
 
@@ -18,9 +19,9 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item := item{}
+	item := models.Item{}
 	item.ID = id
-	item.get()
+	item.Get()
 
 	// importItems()
 
@@ -30,13 +31,13 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Return template
-	itemVars := itemVars{}
-	itemVars.Item = item
+	vars := itemVars{}
+	vars.Item = item
 
-	returnTemplate(w, "item", itemVars)
+	returnTemplate(w, "item", vars)
 	return
 }
 
 type itemVars struct {
-	Item item
+	Item models.Item
 }

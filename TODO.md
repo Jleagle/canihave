@@ -19,3 +19,5 @@ Add links to
 - pass js files through to the template so they are not on every page
 - only use js files if needed
 - stop ajax when no more results
+- dont do another ajax if only 11 items are returned
+- finish fb graph tags
