@@ -1,13 +1,13 @@
 {{define "item"}} {{ template "header" }}
 
 <div class="jumbotron pt-4 pb-4">
-  <h1 class="display-3">{{ .Item.Name }}</h1>
+  <h1 class="display-5">{{ .Item.Name }}</h1>
   <p class="lead">{{ .Item.Desc }}</p>
 </div>
 
 <ul class="nav nav-pills mb-4">
   <li class="nav-item">
-    <a class="nav-link active" href="{{.Item.GetUKLink}}">Buy Item</a>
+    <a class="nav-link active" href="{{.Item.Link}}">Buy Item</a>
   </li>
 </ul>
 

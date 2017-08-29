@@ -22,6 +22,8 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	item.ID = id
 	item.get()
 
+	// importItems()
+
 	if item.Link != "" {
 		returnTemplate(w, "error", errorVars{HTTPCode: 404, Message: "Can't find item"})
 		return

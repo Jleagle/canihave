@@ -26,8 +26,6 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	options.page = strconv.Itoa(helpers.Min([]int{pageInt, maxPage}))
 	options.search = r.Form.Get("search")
 
-	//fmt.Printf("%v", options.search)
-
 	// Return template
 	vars := searchVars{}
 	vars.Items = handleQuery(options)
@@ -73,10 +71,6 @@ func handleQuery(options queryOptions) []item {
 	if error != nil {
 		fmt.Println(error)
 	}
-
-	fmt.Println(options.search)
-	fmt.Println(args)
-	fmt.Println(sql)
 
 	// Run the query
 	rows, error := db.Query(sql, args...)

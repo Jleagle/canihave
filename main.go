@@ -10,14 +10,19 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi"
 	_ "github.com/go-sql-driver/mysql"
+	cache "github.com/patrickmn/go-cache"
 )
 
 var database *sql.DB
+var c *cache.Cache
 
 func main() {
+
+	c = cache.New(5*time.Minute, 10*time.Minute)
 
 	r := chi.NewRouter()
 
