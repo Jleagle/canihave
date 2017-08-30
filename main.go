@@ -22,6 +22,7 @@ func main() {
 	r.Get("/", searchHandler)
 	r.Post("/", searchHandler)
 	r.Get("/info", infoHandler)
+	r.Get("/site-map", siteMapHandler)
 	r.Get("/scrape", scraper.ScrapeHandler)
 	r.Get("/ajax", ajaxHandler)
 
