@@ -11,6 +11,7 @@ import (
 
 func ScrapeHandler(w http.ResponseWriter, r *http.Request) {
 
+	// todo, check env var to stop people hitting this url
 	shitYouCanAfford()
 }
 

@@ -20,11 +20,12 @@ type Item struct {
 	Desc            string
 	Link            string
 	Source          string
-	SalesRank       int
+	SalesRank       string
 	Images          string
 	ProductGroup    string
 	ProductTypeName string
 	Status          string
+	Price           string
 }
 
 func (i Item) GetUKPixel() string {
@@ -97,11 +98,13 @@ func (i *Item) getFromMysql() (found bool) {
 
 func (i *Item) getFromAmazon() (found bool) {
 
+	// Setup Amazon
 	client, err := amazon.NewFromEnvionment()
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Make API call
 	res, err := client.ItemLookup(amazon.ItemLookupParameters{
 		ResponseGroups: []amazon.ItemLookupResponseGroup{
 			amazon.ItemLookupResponseGroupLarge,
@@ -118,7 +121,7 @@ func (i *Item) getFromAmazon() (found bool) {
 	if len(res.Items.Item) > 0 {
 		amazonItem = res.Items.Item[0]
 	} else {
-		log.Fatal("Item not on amazon")
+		i.Status = "Not found in Amazon"
 		return false
 	}
 
@@ -131,6 +134,7 @@ func (i *Item) getFromAmazon() (found bool) {
 	i.Images = "[]"
 	i.ProductGroup = amazonItem.ItemAttributes.ProductGroup
 	i.ProductTypeName = amazonItem.ItemAttributes.ProductTypeName
+	i.Price = amazonItem.ItemAttributes.ListPrice.FormattedPrice
 
 	return true
 }
@@ -213,6 +217,7 @@ func ImportItems() bool {
 	for _, id := range items {
 		i := Item{}
 		i.ID = id
+		i.Source = "import"
 		i.Get()
 	}
 
