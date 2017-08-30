@@ -16,10 +16,10 @@ func GetMysqlConnection() *sql.DB {
 			password = ":" + password
 		}
 
-		var error error
-		mysql, error = sql.Open("mysql", "root"+password+"@tcp(127.0.0.1:3306)/canihave")
-		if error != nil {
-			panic(error.Error())
+		var err error
+		mysql, err = sql.Open("mysql", "root"+password+"@tcp(127.0.0.1:3306)/canihave")
+		if err != nil {
+			panic(err.Error())
 		}
 	}
 

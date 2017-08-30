@@ -1,8 +1,23 @@
 {{define "item"}} {{ template "header" }}
 
+<div id="fb-root"></div>
+<script>
+    (function (d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.10";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+</script>
+
 <div class="jumbotron pt-4 pb-4">
   <h1 class="display-5">{{ .Item.Name }}</h1>
   <p class="lead">{{ .Item.Desc }}</p>
+
+  <div class="fb-like" data-href="https://canihave.one/{{.Item.ID}}" data-layout="standard" data-action="like" data-size="small" data-show-faces="true" data-share="true"></div>
+  <div><a href="https://twitter.com/share" class="twitter-share-button" data-show-count="false">Tweet</a></div>
+  
 </div>
 
 <ul class="nav nav-pills mb-4">

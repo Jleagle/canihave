@@ -23,9 +23,9 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	item.ID = id
 	item.Get()
 
-	// importItems()
+	models.ImportItems()
 
-	if item.Link != "" {
+	if item.Link == "" {
 		returnTemplate(w, "error", errorVars{HTTPCode: 404, Message: "Can't find item"})
 		return
 	}
@@ -33,11 +33,13 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	// Return template
 	vars := itemVars{}
 	vars.Item = item
+	vars.Javascript = []string{"//platform.twitter.com/widgets.js"}
 
 	returnTemplate(w, "item", vars)
 	return
 }
 
 type itemVars struct {
-	Item models.Item
+	Item       models.Item
+	Javascript []string
 }

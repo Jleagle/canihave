@@ -8,7 +8,7 @@ import (
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
-	cache "github.com/patrickmn/go-cache"
+	"github.com/patrickmn/go-cache"
 )
 
 // item is the database row
@@ -24,9 +24,10 @@ type Item struct {
 	Images          string
 	ProductGroup    string
 	ProductTypeName string
+	Status          string
 }
 
-func (i *Item) GetUKPixel() string {
+func (i Item) GetUKPixel() string {
 	return "//ir-uk.amazon-adsystem.com/e/ir?t=canihaveone00-21&l=am2&o=2&a=" + i.ID
 }
 
@@ -38,17 +39,20 @@ func (i *Item) Get() {
 
 	// Get from cache
 	if i.getFromMemcache() {
+		fmt.Println("Retrieving " + i.ID + " from cache")
 		return
 	}
 
 	// Get from MySQL
 	if i.getFromMysql() {
+		fmt.Println("Retrieving " + i.ID + " from SQL")
 		i.saveToMemcache()
 		return
 	}
 
 	// Get from Amazon
 	if i.getFromAmazon() {
+		fmt.Println("Retrieving " + i.ID + " from Amazon")
 		i.saveToMysql()
 		i.saveToMemcache()
 		return
@@ -57,29 +61,33 @@ func (i *Item) Get() {
 
 func (i *Item) getFromMemcache() (found bool) {
 
-	return false // todo
-
-	// fmt.Println("Retrieving " + i.ID + " from cache")
-
-	// foo, found := c.Get(i.ID)
-	// item, _ := foo.(item) // Cast it back to item
-
-	// i = item
-
-	// return found
+	foo, found := store.GetGoCache().Get(i.ID)
+	if found {
+		item, _ := foo.(Item) // Cast it back to item
+		i.DateCreated = item.DateCreated
+		i.DateUpdated = item.DateUpdated
+		i.Name = item.Name
+		i.Link = item.Link
+		i.Source = item.Source
+		i.SalesRank = item.SalesRank
+		i.Images = item.Images
+		i.ProductGroup = item.ProductGroup
+		i.ProductTypeName = item.ProductTypeName
+	}
+	return found
 }
 
 func (i *Item) getFromMysql() (found bool) {
 
 	// Make the query
 	query := squirrel.Select("*").From("items").Where("id = ?", i.ID).Limit(1)
-	sql, args, error := query.ToSql()
-	if error != nil {
-		fmt.Println(error)
+	sql, args, err := query.ToSql()
+	if err != nil {
+		fmt.Println(err)
 	}
 
 	db := store.GetMysqlConnection()
-	err := db.QueryRow(sql, args...).Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Desc, &i.Link, &i.Source, &i.SalesRank, &i.Images, &i.ProductGroup, &i.ProductTypeName)
+	err = db.QueryRow(sql, args...).Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Desc, &i.Link, &i.Source, &i.SalesRank, &i.Images, &i.ProductGroup, &i.ProductTypeName)
 	if err != nil {
 		return false
 	}
@@ -89,12 +97,12 @@ func (i *Item) getFromMysql() (found bool) {
 
 func (i *Item) getFromAmazon() (found bool) {
 
-	client, error := amazon.NewFromEnvionment()
-	if error != nil {
-		log.Fatal(error)
+	client, err := amazon.NewFromEnvionment()
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	res, error := client.ItemLookup(amazon.ItemLookupParameters{
+	res, err := client.ItemLookup(amazon.ItemLookupParameters{
 		ResponseGroups: []amazon.ItemLookupResponseGroup{
 			amazon.ItemLookupResponseGroupLarge,
 		},
@@ -102,8 +110,8 @@ func (i *Item) getFromAmazon() (found bool) {
 		ItemIDs: []string{i.ID},
 	}).Do()
 
-	if error != nil {
-		log.Fatal(error)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	var amazonItem amazon.Item
@@ -114,15 +122,15 @@ func (i *Item) getFromAmazon() (found bool) {
 		return false
 	}
 
-	//fmt.Printf("%# v", pretty.Formatter(item))
-
-	// Some presets
+	// Make struct
 	date := time.Now().Format("2006-01-02")
 	i.DateCreated = date
 	i.DateUpdated = date
-	i.Source = "1" //todo
 	i.Name = amazonItem.ItemAttributes.Title
 	i.Link = amazonItem.DetailPageURL
+	i.Images = "[]"
+	i.ProductGroup = amazonItem.ItemAttributes.ProductGroup
+	i.ProductTypeName = amazonItem.ItemAttributes.ProductTypeName
 
 	return true
 }
@@ -131,10 +139,6 @@ func (i *Item) saveToMemcache() {
 
 	x := store.GetGoCache()
 	x.Set(i.ID, i, cache.DefaultExpiration)
-
-	//foo, _ := c.Get(i.ID)
-	// fmt.Printf("%# v", pretty.Formatter(foo))
-	// return
 }
 
 func (i *Item) saveToMysql() {
@@ -146,16 +150,16 @@ func (i *Item) saveToMysql() {
 
 	// todo, switch to query builder
 	// Prepare statement for inserting data
-	insert, error := conn.Prepare("INSERT INTO items (id, dateCreated, dateUpdated, `name`, `desc`, link, source, salesRank, images, productGroup, productTypeName) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-	if error != nil {
-		panic(error.Error())
+	insert, err := conn.Prepare("INSERT INTO items (id, dateCreated, dateUpdated, `name`, `desc`, link, source, salesRank, images, productGroup, productTypeName) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		panic(err.Error())
 	}
 	defer insert.Close()
 
 	// run query
-	_, error = insert.Exec(i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Desc, i.Link, i.Source, i.SalesRank, i.Images, i.ProductGroup, i.ProductTypeName)
-	if error != nil {
-		panic(error.Error())
+	_, err = insert.Exec(i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Desc, i.Link, i.Source, i.SalesRank, i.Images, i.ProductGroup, i.ProductTypeName)
+	if err != nil {
+		panic(err.Error())
 	}
 }
 

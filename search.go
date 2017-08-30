@@ -48,40 +48,33 @@ func handleQuery(page int, search string) []models.Item {
 	if search != "" {
 		query = query.Where("name LIKE ?", "%"+search+"%")
 	}
-	fmt.Printf("%v", (page-1)*12)
 	query = query.OrderBy("dateCreated DESC").Limit(12).Offset(uint64((page - 1) * 12))
 
-	sql, args, error := query.ToSql()
-	if error != nil {
-		fmt.Println(error)
+	sql, args, err := query.ToSql()
+	if err != nil {
+		fmt.Println(err)
 	}
-	fmt.Printf("%v", sql)
 
 	// Run SQL
-	rows, error := conn.Query(sql, args...)
-	if error != nil {
-		fmt.Println(error)
+	rows, err := conn.Query(sql, args...)
+	if err != nil {
+		fmt.Println(err)
 	}
 	defer rows.Close()
 
 	// Convert to types
 	results := []models.Item{}
-	item := models.Item{}
+	i := models.Item{}
 	for rows.Next() {
-		rows.Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.Name, &item.Desc, &item.Source)
-		results = append(results, item)
+		err := rows.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Desc, &i.Link, &i.Source, &i.SalesRank, &i.Images, &i.ProductGroup, &i.ProductTypeName)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		results = append(results, i)
 	}
 
 	return results
-}
-
-func s2uint64(i string) uint64 {
-
-	ix, err := strconv.ParseInt(i, 10, 64)
-	if err != nil {
-		panic(err)
-	}
-	return uint64(ix)
 }
 
 type searchVars struct {

@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/Jleagle/canihave/scraper"
 	"github.com/go-chi/chi"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -21,6 +22,7 @@ func main() {
 	r.Get("/", searchHandler)
 	r.Post("/", searchHandler)
 	r.Get("/info", infoHandler)
+	r.Get("/scrape", scraper.ScrapeHandler)
 	r.Get("/ajax", ajaxHandler)
 	r.Get("/{id}", itemHandler)
 
@@ -41,15 +43,15 @@ func returnTemplate(w http.ResponseWriter, page string, pageData interface{}) {
 	folder := path.Dir(file)
 
 	// Load templates needed
-	t, error := template.ParseFiles(folder+"/templates/header.html", folder+"/templates/footer.html", folder+"/templates/card.html", folder+"/templates/"+page+".html")
-	if error != nil {
-		panic(error)
+	t, err := template.ParseFiles(folder+"/templates/header.html", folder+"/templates/footer.html", folder+"/templates/card.html", folder+"/templates/"+page+".html")
+	if err != nil {
+		panic(err)
 	}
 
 	// Write a respone
-	error = t.ExecuteTemplate(w, page, pageData)
-	if error != nil {
-		panic(error)
+	err = t.ExecuteTemplate(w, page, pageData)
+	if err != nil {
+		panic(err)
 	}
 }
 

@@ -5,18 +5,19 @@
     (function (d, s, id) {
         var js, fjs = d.getElementsByTagName(s)[0];
         if (d.getElementById(id)) return;
-        js = d.createElement(s); js.id = id;
+        js = d.createElement(s);
+        js.id = id;
         js.src = "//connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.10";
         fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
 </script>
 
 <div class="jumbotron pt-4 pb-4">
-  <h1 class="display-3">Canihave.one</h1>
-  <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p>
+    <h1 class="display-3">Canihave.one</h1>
+    <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p>
 
-  <div class="fb-like" data-href="https://www.facebook.com/pleasecanihaveone" data-layout="standard" data-action="like" data-size="small" data-show-faces="true" data-share="true"></div>
-  <div><a href="https://twitter.com/Canihave_one" class="twitter-follow-button" data-show-count="false">Follow @Canihave_one</a></div>
+    <div class="fb-like" data-href="https://canihave.one" data-layout="standard" data-action="like" data-size="small" data-show-faces="true" data-share="true"></div>
+    <div><a href="https://twitter.com/Canihave_one" class="twitter-follow-button" data-show-count="false">Follow @Canihave_one</a></div>
 
 </div>
 
@@ -29,13 +30,15 @@
 {{if .Items}}
 
 <div class="row" data-page="1" id="results" data-last="0" data-search="{{.Search64}}">
-  {{range .Items}} {{ template "card" .}} {{ end }}
+    {{ range .Items }}
+    {{ template "card" .}}
+    {{ end }}
 </div>
 
 {{else}} NO ITEMS {{end}}
 
 <div class="progress mb-4" id="loading" style="display: none;">
-  <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
 </div>
 
 {{ template "footer" .}} {{end}}

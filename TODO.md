@@ -1,9 +1,9 @@
 - google site map
-- Link to smile dot, talk about smile on info page
+- Link to smile dot, talk about smile on info page - US only
 - Add amazon reviews with iframe
 - Country drop down (amazon regions)
 - Pay with amazon?
-- Link social networks automatically
+- Post to social networks automatically
 
 Add links to
 - https://www.facebook.com/pleasecanihaveone/
