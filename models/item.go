@@ -23,7 +23,6 @@ type Item struct {
 	SalesRank       int
 	Photo           string
 	ProductGroup    string
-	ProductTypeName string
 	Price           string
 	Currency        string
 
@@ -71,7 +70,6 @@ func (i *Item) getFromMemcache() (found bool) {
 		i.SalesRank = item.SalesRank
 		i.Photo = item.Photo
 		i.ProductGroup = item.ProductGroup
-		i.ProductTypeName = item.ProductTypeName
 		i.Price = item.Price
 		i.Currency = item.Currency
 	}
@@ -94,7 +92,7 @@ func (i *Item) getFromMysql() (found bool) {
 	}
 
 	db := store.GetMysqlConnection()
-	err = db.QueryRow(sql, args...).Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.ProductGroup, &i.ProductTypeName, &i.Price, &i.Currency)
+	err = db.QueryRow(sql, args...).Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.ProductGroup, &i.Price, &i.Currency)
 	if err != nil {
 		//fmt.Printf("%v", err.Error())
 		return false
@@ -116,14 +114,14 @@ func (i *Item) saveToMysql() {
 
 	// todo, switch to query builder
 	// Prepare statement for inserting data
-	insert, err := conn.Prepare("INSERT INTO items (id, dateCreated, dateUpdated, `name`, link, source, salesRank, photo, productGroup, productTypeName, price, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	insert, err := conn.Prepare("INSERT INTO items (id, dateCreated, dateUpdated, `name`, link, source, salesRank, photo, productGroup, price, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		panic(err.Error())
 	}
 	defer insert.Close()
 
 	// run query
-	_, err = insert.Exec(i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.ProductGroup, i.ProductTypeName, i.Price, i.Currency)
+	_, err = insert.Exec(i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.ProductGroup, i.Price, i.Currency)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -169,7 +167,6 @@ func (i *Item) getFromAmazon() (found bool) {
 	i.SalesRank = amazonItem.SalesRank
 	i.Photo = amazonItem.LargeImage.URL
 	i.ProductGroup = amazonItem.ItemAttributes.ProductGroup
-	i.ProductTypeName = amazonItem.ItemAttributes.ProductTypeName
 	i.Price = amazonItem.ItemAttributes.ListPrice.Amount
 	i.Currency = amazonItem.ItemAttributes.ListPrice.CurrencyCode
 
