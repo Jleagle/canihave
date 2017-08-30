@@ -24,7 +24,6 @@ func main() {
 	r.Get("/info", infoHandler)
 	r.Get("/scrape", scraper.ScrapeHandler)
 	r.Get("/ajax", ajaxHandler)
-	r.Get("/{id}", itemHandler)
 
 	workDir, _ := os.Getwd()
 	filesDir := filepath.Join(workDir, "assets")

@@ -66,7 +66,7 @@ func handleQuery(page int, search string) []models.Item {
 	results := []models.Item{}
 	i := models.Item{}
 	for rows.Next() {
-		err := rows.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Desc, &i.Link, &i.Source, &i.SalesRank, &i.Images, &i.ProductGroup, &i.ProductTypeName)
+		err := rows.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.ProductGroup, &i.ProductTypeName, &i.Price, &i.Currency)
 		if err != nil {
 			fmt.Println(err)
 		}

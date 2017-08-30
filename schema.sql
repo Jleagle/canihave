@@ -3,19 +3,12 @@ CREATE TABLE `items` (
   `dateCreated` date NOT NULL,
   `dateUpdated` date NOT NULL,
   `name` varchar(255) NOT NULL,
-  `desc` text NOT NULL,
   `link` varchar(255) NOT NULL,
-  `source` int(11) unsigned NOT NULL,
+  `source` varchar(255) NOT NULL DEFAULT '',
   `salesRank` int(11) unsigned NOT NULL,
-  `images` text NOT NULL,
+  `photo` varchar(255) NOT NULL DEFAULT '',
   `productGroup` varchar(255) NOT NULL DEFAULT '',
   `productTypeName` varchar(255) NOT NULL DEFAULT '',
-  `price` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE `sources` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `domain` varchar(255) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
+  `price` decimal(11,2) unsigned NOT NULL,
+  `currency` varchar(255) NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

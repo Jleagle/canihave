@@ -21,3 +21,4 @@ Add links to
 - stop ajax when no more results
 - dont do another ajax if only 11 items are returned
 - finish fb graph tags
+- grab items from trending/top sellers

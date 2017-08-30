@@ -2,11 +2,11 @@
 
 <div class="col-12 col-md-6 col-lg-4 col-xl-4 mb-4">
     <div class="card">
-        <img class="card-img-top" src="http://via.placeholder.com/600x300" alt="Card image cap">
+        <img class="card-img-top" src="{{.Photo}}" alt="{{ .Name }}">
         <div class="card-body">
             <h4 class="card-title">{{ .Name }}</h4>
-            <p class="card-text">{{.Desc}}</p>
-            <a href="/{{.ID}}" class="btn btn-primary">More info!</a>
+            <p class="card-text">Price: {{.Price}} {{.Currency}}</p>
+            <a href="{{.Link}}" class="btn btn-primary" target="_blank">More info!</a>
         </div>
     </div>
 </div>
