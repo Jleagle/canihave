@@ -107,21 +107,8 @@ func (i *Item) saveToMysql() {
 		i.Price = "0"
 	}
 
-	// Make query
-	//sql, args, err := sq.Insert("items").Columns("name", "age").Values("moe", 13).ToSql()
-
-	conn := store.GetMysqlConnection()
-
-	// todo, switch to query builder
-	// Prepare statement for inserting data
-	insert, err := conn.Prepare("INSERT INTO items (id, dateCreated, dateUpdated, `name`, link, source, salesRank, photo, productGroup, price, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-	if err != nil {
-		panic(err.Error())
-	}
-	defer insert.Close()
-
 	// run query
-	_, err = insert.Exec(i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.ProductGroup, i.Price, i.Currency)
+	_, err := store.GetInsertPrep().Exec(i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.ProductGroup, i.Price, i.Currency)
 	if err != nil {
 		panic(err.Error())
 	}

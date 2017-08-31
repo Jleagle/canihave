@@ -20,3 +20,4 @@ TODO
 - some sort of word cloud of item categories
 - only show price if not 0
 - do, inline todos
+- change scrap rest endpoint to CLI argument

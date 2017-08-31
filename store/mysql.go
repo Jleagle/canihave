@@ -6,6 +6,7 @@ import (
 )
 
 var mysql *sql.DB
+var mysqlInsertItem *sql.Stmt
 
 func GetMysqlConnection() *sql.DB {
 
@@ -24,4 +25,20 @@ func GetMysqlConnection() *sql.DB {
 	}
 
 	return mysql
+}
+
+func GetInsertPrep() *sql.Stmt {
+
+	if mysqlInsertItem == nil {
+
+		conn := GetMysqlConnection()
+
+		var err error
+		mysqlInsertItem, err = conn.Prepare("INSERT INTO items (id, dateCreated, dateUpdated, name, link, source, salesRank, photo, productGroup, price, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
+	return mysqlInsertItem
 }
