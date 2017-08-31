@@ -12,7 +12,11 @@ import (
 	"github.com/Jleagle/canihave/location"
 )
 
+var perPage int = 94
+
 func searchHandler(w http.ResponseWriter, r *http.Request) {
+
+	params :=r.URL.Query()
 
 	// Country override
 	flag := r.URL.Query().Get("flag")
@@ -22,21 +26,28 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get data
-	search := r.Form.Get("search")
-	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
-	perPage := 94
-
-	if page < 1 {
-		page = 1
+	search := params.Get("search")
+	category := params.Get("cat")
+	page := params.Get("page")
+	if page == "" {
+		page = "1"
 	}
 
 	// Make SQL
+	pageInt, _ := strconv.Atoi(page)
+	if pageInt < 1 {
+		pageInt = 1
+	}
+
 	conn := store.GetMysqlConnection()
 	query := squirrel.Select("*").From("items")
 	if search != "" {
 		query = query.Where("name LIKE ?", "%"+search+"%")
 	}
-	query = query.OrderBy("dateCreated DESC").Limit(uint64(perPage)).Offset(uint64((page - 1) * perPage))
+	if category != "" {
+		query = query.Where("cat = ?", category)
+	}
+	query = query.OrderBy("dateCreated DESC").Limit(uint64(perPage)).Offset(uint64((pageInt - 1) * perPage))
 
 	sql, args, err := query.ToSql()
 	if err != nil {
@@ -70,6 +81,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Javascript = []string{"//platform.twitter.com/widgets.js"}
 	vars.Flag = location.GetAmazonRegion(w, r)
 	vars.Flags = regions
+	vars.Page = page
 
 	returnTemplate(w, "search", vars)
 }
@@ -77,6 +89,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 type searchVars struct {
 	Items      []models.Item
 	Page       string
+	Category   string
 	Search     string
 	Search64   string
 	Javascript []string

@@ -54,7 +54,9 @@
                 </li>
             </ul>
 
-            <form class="form-inline my-2 my-lg-0" action="/" method="post">
+            <form class="form-inline my-2 my-lg-0" action="/" method="get">
+                <input type="hidden" name="page" value="{{.Page}}">
+                <input type="hidden" name="cat" value="{{.Category}}">
                 <input class="form-control mr-sm-2" placeholder="Search" name="search" value="{{.Search}}">
                 <button class="btn btn-outline-success my-2 my-sm-0">Search</button>
             </form>
