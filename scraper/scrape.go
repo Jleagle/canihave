@@ -1,19 +1,28 @@
 package scraper
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"regexp"
 
 	"github.com/Jleagle/canihave/models"
+	"github.com/go-chi/chi"
+	"time"
 )
 
 func ScrapeHandler(w http.ResponseWriter, r *http.Request) {
 
 	// todo, check env var to stop people hitting this url
-	shitYouCanAfford()
-	importItems()
+
+	id := chi.URLParam(r, "id")
+	if id != "" {
+		item := models.Item{}
+		item.ID = id
+		item.Get()
+	} else {
+		shitYouCanAfford()
+		importItems()
+	}
 }
 
 func shitYouCanAfford() {
@@ -31,10 +40,12 @@ func shitYouCanAfford() {
 
 	item := models.Item{}
 	for _, value := range matches {
-		fmt.Printf("%v", "Adding "+item.ID)
+
 		item.ID = value
 		item.Source = "shityoucanafford"
 		item.Get()
+
+		time.Sleep(time.Second)
 	}
 }
 
@@ -85,11 +96,14 @@ func importItems() bool {
 		"B071JRMKBH",
 	}
 
+	i := models.Item{}
 	for _, id := range items {
-		i := models.Item{}
+
 		i.ID = id
 		i.Source = "import"
 		i.Get()
+
+		time.Sleep(time.Second)
 	}
 
 	return true

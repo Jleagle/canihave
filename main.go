@@ -17,6 +17,12 @@ import (
 
 func main() {
 
+	//os.Setenv("AWS_PRODUCT_REGION", "UK")
+	//os.Setenv("AWS_ASSOCIATE_TAG", "canihaveone00-21")
+
+	os.Setenv("AWS_PRODUCT_REGION", "US")
+	os.Setenv("AWS_ASSOCIATE_TAG", "canihaveone-20")
+
 	r := chi.NewRouter()
 
 	r.Get("/", searchHandler)
@@ -24,6 +30,7 @@ func main() {
 	r.Get("/info", infoHandler)
 	r.Get("/site-map", siteMapHandler)
 	r.Get("/scrape", scraper.ScrapeHandler)
+	r.Get("/scrape/{id}", scraper.ScrapeHandler)
 	r.Get("/ajax", ajaxHandler)
 
 	workDir, _ := os.Getwd()

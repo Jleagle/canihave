@@ -1,8 +1,9 @@
+TODO
+====
+
 - google site map
 - Link to smile dot, talk about smile on info page - US only
-- Add amazon reviews with iframe
 - Country drop down (amazon regions)
-- Pay with amazon?
 - Post to social networks automatically
 - Use different country affiliate links for different users
 - check for inserting dupe items into mysql
@@ -16,3 +17,6 @@
 - finish fb graph tags
 - grab items from trending/top sellers
 - fix currency showing wrong decimal position
+- some sort of word cloud of item categories
+- only show price if not 0
+- do, inline todos

@@ -1,0 +1,13 @@
+img.flag {
+    height: 13px;
+    vertical-align: baseline;
+    margin-right: 2px;
+}
+
+a[data-toggle="dropdown"] {
+    cursor: pointer;
+}
+
+div.social-container {
+    height: 24px;
+}

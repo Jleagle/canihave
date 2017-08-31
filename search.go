@@ -9,6 +9,7 @@ import (
 	"github.com/Jleagle/canihave/models"
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
+	"github.com/Jleagle/canihave/location"
 )
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
@@ -21,6 +22,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Search = search
 	vars.Search64 = base64.StdEncoding.EncodeToString([]byte(search))
 	vars.Javascript = []string{"/assets/search.js", "//platform.twitter.com/widgets.js"}
+	vars.Flag = location.GetAmazonRegion(r)
 
 	returnTemplate(w, "search", vars)
 }
@@ -83,4 +85,5 @@ type searchVars struct {
 	Search     string
 	Search64   string
 	Javascript []string
+	Flag       string
 }

@@ -1,4 +1,3 @@
-
 var loading = false;
 
 var t = setInterval(checkPagePosition, 1000);

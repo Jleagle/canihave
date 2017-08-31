@@ -1,13 +1,15 @@
 CREATE TABLE `items` (
-  `id` varchar(11) NOT NULL DEFAULT '',
-  `dateCreated` datetime NOT NULL,
-  `dateUpdated` datetime NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `link` varchar(255) NOT NULL,
-  `source` varchar(255) NOT NULL DEFAULT '',
-  `salesRank` int(11) unsigned NOT NULL,
-  `photo` varchar(255) NOT NULL DEFAULT '',
-  `productGroup` varchar(255) NOT NULL DEFAULT '',
-  `price` decimal(11,2) unsigned NOT NULL,
-  `currency` varchar(255) NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `id`           VARCHAR(11)             NOT NULL DEFAULT '',
+  `dateCreated`  DATETIME                NOT NULL,
+  `dateUpdated`  DATETIME                NOT NULL,
+  `name`         VARCHAR(255)            NOT NULL,
+  `link`         VARCHAR(255)            NOT NULL,
+  `source`       VARCHAR(255)            NOT NULL DEFAULT '',
+  `salesRank`    INT(11) UNSIGNED        NOT NULL,
+  `photo`        VARCHAR(255)            NOT NULL DEFAULT '',
+  `productGroup` VARCHAR(255)            NOT NULL DEFAULT '',
+  `price`        DECIMAL(11, 2) UNSIGNED NOT NULL,
+  `currency`     VARCHAR(255)            NOT NULL DEFAULT ''
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;

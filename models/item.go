@@ -13,18 +13,18 @@ import (
 
 // item is the database row
 type Item struct {
-	ID              string
-	DateCreated     string
-	DateUpdated     string
-	Name            string
-	Desc            string
-	Link            string
-	Source          string
-	SalesRank       int
-	Photo           string
-	ProductGroup    string
-	Price           string
-	Currency        string
+	ID           string
+	DateCreated  string
+	DateUpdated  string
+	Name         string
+	Desc         string
+	Link         string
+	Source       string
+	SalesRank    int
+	Photo        string
+	ProductGroup string
+	Price        string
+	Currency     string
 
 	Status string
 }
