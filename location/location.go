@@ -10,7 +10,6 @@ import (
 
 func getISO(r *http.Request) string {
 
-	// todo, wrap a cooking check around this
 	// Connect to database
 	db, err := geoip2.Open("location/GeoLite2-Country.mmdb")
 	if err != nil {
@@ -35,12 +34,48 @@ func getISO(r *http.Request) string {
 	return record.Country.IsoCode
 }
 
-func GetAmazonRegion(r *http.Request) string {
+func GetAmazonRegion(w http.ResponseWriter, r *http.Request) string {
 
-	switch getISO(r) {
-	case "UK":
-	case "GB":
-		return "UK"
+	var ret string
+
+	var cookie, err = r.Cookie("flag")
+	if err == nil {
+		ret = cookie.Value
+	} else {
+
+		iso := getISO(r)
+
+		switch iso {
+		case "BR":
+		case "CA":
+		case "CN":
+		case "DE":
+		case "ES":
+		case "FR":
+		case "IN":
+		case "IT":
+		case "JP":
+		case "MX":
+			ret = iso
+		case "UK":
+		case "GB":
+			ret = "UK"
+		}
+		ret = "US"
+
+		// Set cookie
+		SetCookie(w, ret)
 	}
-	return "US"
+
+	return ret
+}
+
+func SetCookie(w http.ResponseWriter, flag string) {
+	cookie := &http.Cookie{
+		Name:     "flag",
+		Value:    flag,
+		HttpOnly: false,
+		MaxAge:   0,
+	}
+	http.SetCookie(w, cookie)
 }

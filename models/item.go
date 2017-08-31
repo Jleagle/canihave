@@ -62,6 +62,7 @@ func (i *Item) getFromMemcache() (found bool) {
 	foo, found := store.GetGoCache().Get(i.ID)
 	if found {
 		item, _ := foo.(Item) // Cast it back to item
+
 		i.DateCreated = item.DateCreated
 		i.DateUpdated = item.DateUpdated
 		i.Name = item.Name
@@ -78,8 +79,8 @@ func (i *Item) getFromMemcache() (found bool) {
 
 func (i *Item) saveToMemcache() {
 
-	x := store.GetGoCache()
-	x.Set(i.ID, i, cache.DefaultExpiration)
+	c := store.GetGoCache()
+	c.Set(i.ID, i, cache.DefaultExpiration)
 }
 
 func (i *Item) getFromMysql() (found bool) {

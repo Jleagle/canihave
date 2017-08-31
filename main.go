@@ -15,7 +15,24 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+var regions map[string]string
+
 func main() {
+
+	regions = map[string]string{
+		"BR": "Brazil",
+		"CA": "Canada",
+		"CN": "China",
+		"DE": "Deutschland",
+		"ES": "España",
+		"FR": "France",
+		"IN": "India",
+		"IT": "Italia",
+		"JP": "Japan",
+		"MX": "Mexico",
+		"UK": "United Kingdom",
+		"US": "United States",
+	}
 
 	//os.Setenv("AWS_PRODUCT_REGION", "UK")
 	//os.Setenv("AWS_ASSOCIATE_TAG", "canihaveone00-21")
@@ -31,7 +48,6 @@ func main() {
 	r.Get("/site-map", siteMapHandler)
 	r.Get("/scrape", scraper.ScrapeHandler)
 	r.Get("/scrape/{id}", scraper.ScrapeHandler)
-	r.Get("/ajax", ajaxHandler)
 
 	workDir, _ := os.Getwd()
 	filesDir := filepath.Join(workDir, "assets")
@@ -50,7 +66,7 @@ func returnTemplate(w http.ResponseWriter, page string, pageData interface{}) {
 	folder := path.Dir(file)
 
 	// Load templates needed
-	t, err := template.ParseFiles(folder+"/templates/header.html", folder+"/templates/footer.html", folder+"/templates/card.html", folder+"/templates/"+page+".html")
+	t, err := template.ParseFiles(folder+"/templates/header.html", folder+"/templates/footer.html", folder+"/templates/"+page+".html")
 	if err != nil {
 		panic(err)
 	}

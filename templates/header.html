@@ -45,12 +45,11 @@
                         <img class="flag" src="/assets/flags/{{.Flag}}.gif" alt="{{.Flag}}">{{.Flag}}
                     </a>
                     <div class="dropdown-menu">
-                        <a class="dropdown-item" href="#">
-                            <img class="flag" src="https://images-na.ssl-images-amazon.com/images/G/01/associates/network/US-flag._V192206995_.gif" alt="US">US
+                        {{ range $key, $val := .Flags }}
+                        <a class="dropdown-item" href="/?flag={{$key}}">
+                            <img class="flag" src="/assets/flags/{{$key}}.gif" alt="{{$val}}">{{$val}}
                         </a>
-                        <a class="dropdown-item" href="#">
-                            <img class="flag" src="https://images-na.ssl-images-amazon.com/images/G/01/associates/network/UK-flag._V192206992_.gif" alt="UK">UK
-                        </a>
+                        {{ end }}
                     </div>
                 </li>
             </ul>

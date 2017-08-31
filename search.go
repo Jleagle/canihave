@@ -14,31 +14,17 @@ import (
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 
+	// Country override
+	flag := r.URL.Query().Get("flag")
+	if flag != "" {
+		location.SetCookie(w, flag)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+
+	// Get data
 	search := r.Form.Get("search")
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
-
-	vars := searchVars{}
-	vars.Items = handleQuery(page, search)
-	vars.Search = search
-	vars.Search64 = base64.StdEncoding.EncodeToString([]byte(search))
-	vars.Javascript = []string{"/assets/search.js", "//platform.twitter.com/widgets.js"}
-	vars.Flag = location.GetAmazonRegion(r)
-
-	returnTemplate(w, "search", vars)
-}
-
-func ajaxHandler(w http.ResponseWriter, r *http.Request) {
-
-	query := r.URL.Query()
-	page, _ := strconv.Atoi(query.Get("page"))
-
-	vars := searchVars{}
-	vars.Items = handleQuery(page, query.Get("search"))
-
-	returnTemplate(w, "search_ajax", vars)
-}
-
-func handleQuery(page int, search string) []models.Item {
+	perPage := 94
 
 	if page < 1 {
 		page = 1
@@ -50,7 +36,7 @@ func handleQuery(page int, search string) []models.Item {
 	if search != "" {
 		query = query.Where("name LIKE ?", "%"+search+"%")
 	}
-	query = query.OrderBy("dateCreated DESC").Limit(12).Offset(uint64((page - 1) * 12))
+	query = query.OrderBy("dateCreated DESC").Limit(uint64(perPage)).Offset(uint64((page - 1) * perPage))
 
 	sql, args, err := query.ToSql()
 	if err != nil {
@@ -66,17 +52,26 @@ func handleQuery(page int, search string) []models.Item {
 
 	// Convert to types
 	results := []models.Item{}
-	i := models.Item{}
+	item := models.Item{}
 	for rows.Next() {
-		err := rows.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.ProductGroup, &i.Price, &i.Currency)
+		err := rows.Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.Name, &item.Link, &item.Source, &item.SalesRank, &item.Photo, &item.ProductGroup, &item.Price, &item.Currency)
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		results = append(results, i)
+		results = append(results, item)
 	}
 
-	return results
+	// Return template
+	vars := searchVars{}
+	vars.Items = results
+	vars.Search = search
+	vars.Search64 = base64.StdEncoding.EncodeToString([]byte(search))
+	vars.Javascript = []string{"//platform.twitter.com/widgets.js"}
+	vars.Flag = location.GetAmazonRegion(w, r)
+	vars.Flags = regions
+
+	returnTemplate(w, "search", vars)
 }
 
 type searchVars struct {
@@ -86,4 +81,5 @@ type searchVars struct {
 	Search64   string
 	Javascript []string
 	Flag       string
+	Flags      map[string]string
 }

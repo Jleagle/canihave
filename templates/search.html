@@ -14,35 +14,65 @@
 
 <div class="jumbotron pt-4 pb-4">
     <h1 class="display-3">Canihave.one</h1>
-    <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p>
+    <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to
+        featured content or information.</p>
 
     <div class="social-container">
-        <div class="fb-like" data-href="https://canihave.one" data-layout="standard" data-action="like" data-size="small" data-show-faces="true" data-share="true"></div>
+        <div class="fb-like" data-href="https://canihave.one" data-layout="standard" data-action="like"
+             data-size="small" data-show-faces="true" data-share="true">
+        </div>
     </div>
     <div class="social-container">
-        <a href="https://twitter.com/Canihave_one" class="twitter-follow-button" data-show-count="false">Follow @Canihave_one</a>
+        <a href="https://twitter.com/Canihave_one" class="twitter-follow-button" data-show-count="false">
+            Follow @Canihave_one
+        </a>
     </div>
 
 </div>
 
-<!-- <ol class="breadcrumb">
-  <li class="breadcrumb-item"><a href="#">Home</a></li>
-  <li class="breadcrumb-item"><a href="#">Library</a></li>
-  <li class="breadcrumb-item active">Data</li>
-</ol> -->
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="#">Home</a></li>
+    <li class="breadcrumb-item"><a href="#">Library</a></li>
+    <li class="breadcrumb-item active">Data</li>
+</ol>
 
 {{if .Items}}
 
 <div class="row" data-page="1" id="results" data-last="0" data-search="{{.Search64}}">
     {{ range .Items }}
-    {{ template "card" .}}
+
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-4">
+        <div class="card">
+            <img class="card-img-top" src="{{.Photo}}" alt="{{ .Name }}">
+            <div class="card-body">
+                <h6 class="card-title">{{ .Name }}</h6>
+
+                {{if .Price }}
+                <p class="card-text">Price: {{.Price}} {{.Currency}}</p>
+                {{end}}
+
+                <a href="{{.Link}}" class="btn btn-primary" target="_blank">More info!</a>
+            </div>
+        </div>
+    </div>
+
     {{ end }}
 </div>
 
 {{else}} NO ITEMS {{end}}
 
-<div class="progress mb-4" id="loading" style="display: none;">
-    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
-</div>
+<nav>
+    <ul class="pagination pagination-lg justify-content-center mb-5">
+        <li class="page-item disabled">
+            <a class="page-link" href="#" tabindex="-1">Previous</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="/?page=1">1</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="#">Next</a>
+        </li>
+    </ul>
+</nav>
 
 {{ template "footer" .}} {{end}}

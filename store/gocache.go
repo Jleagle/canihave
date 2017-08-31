@@ -18,3 +18,19 @@ func GetGoCache() *cache.Cache {
 
 	return c
 }
+
+func CacheFunc(key string, fn CacheItem) (interface{}) {
+
+	c := GetGoCache()
+
+	val, exists := c.Get(key)
+	if exists {
+		return val
+	}
+
+	val = fn()
+	c.Set(key, val, cache.DefaultExpiration)
+	return val
+}
+
+type CacheItem func() []interface{}
