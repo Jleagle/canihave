@@ -62,19 +62,9 @@ func GetAmazonRegion(w http.ResponseWriter, r *http.Request) string {
 		iso := getISO(r)
 
 		switch iso {
-		case "BR":
-		case "CA":
-		case "CN":
-		case "DE":
-		case "ES":
-		case "FR":
-		case "IN":
-		case "IT":
-		case "JP":
-		case "MX":
+		case "BR", "CA", "CN", "DE", "ES", "FR", "IN", "IT", "JP", "MX":
 			ret = iso
-		case "UK":
-		case "GB":
+		case "UK", "GB":
 			ret = UK
 		default:
 			ret = US
@@ -101,46 +91,36 @@ func SetAmazonEnviromentVars(region string) {
 	os.Setenv("AWS_PRODUCT_REGION", region)
 
 	switch region {
-	case "BR":
+	case BR:
 		os.Setenv("AWS_ASSOCIATE_TAG", "")
-	case "CA":
+	case CA:
 		os.Setenv("AWS_ASSOCIATE_TAG", "")
-	case "CN":
+	case CN:
 		os.Setenv("AWS_ASSOCIATE_TAG", "")
-	case "DE":
+	case DE:
 		os.Setenv("AWS_ASSOCIATE_TAG", "")
-	case "ES":
+	case ES:
 		os.Setenv("AWS_ASSOCIATE_TAG", "")
-	case "FR":
+	case FR:
 		os.Setenv("AWS_ASSOCIATE_TAG", "")
-	case "IN":
+	case IN:
 		os.Setenv("AWS_ASSOCIATE_TAG", "")
-	case "IT":
+	case IT:
 		os.Setenv("AWS_ASSOCIATE_TAG", "")
-	case "JP":
+	case JP:
 		os.Setenv("AWS_ASSOCIATE_TAG", "")
-	case "MX":
+	case MX:
 		os.Setenv("AWS_ASSOCIATE_TAG", "")
-	case "UK":
+	case UK:
 		os.Setenv("AWS_ASSOCIATE_TAG", "canihaveone00-21")
-	case "US":
+	case US:
 		os.Setenv("AWS_ASSOCIATE_TAG", "canihaveone-20")
 	}
 }
 
 func TLDToRegion(tld string) string {
 	switch tld {
-	case "BR":
-	case "CA":
-	case "CN":
-	case "DE":
-	case "ES":
-	case "FR":
-	case "IN":
-	case "IT":
-	case "JP":
-	case "MX":
-	case "uk":
+	case "br", "ca", "cn", "de", "es", "fr", "in", "it", "jp", "mx", "uk":
 		return strings.ToUpper(tld)
 	}
 
@@ -150,24 +130,19 @@ func TLDToRegion(tld string) string {
 func GetCurrency(region string) string {
 
 	switch region {
-	case "BR":
+	case BR:
 		return "R$"
-	case "CA":
-	case "US":
-	case "MX":
+	case CA, US, MX:
 		return "$"
-	case "CN":
+	case CN:
 		return "¥"
-	case "DE":
-	case "ES":
-	case "FR":
-	case "IT":
+	case DE, ES, FR, IT:
 		return "€"
-	case "IN":
+	case IN:
 		return "₹"
-	case "JP":
+	case JP:
 		return "¥"
-	case "uk":
+	case UK:
 		return "£"
 	}
 

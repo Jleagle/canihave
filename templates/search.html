@@ -46,11 +46,7 @@
             <img class="card-img-top" src="{{.Photo}}" alt="{{ .Name }}">
             <div class="card-body">
                 <h6 class="card-title">{{ .Name }}</h6>
-
-                {{if .Price }}
-                <p class="card-text">Price: {{.Price }}-{{.GetPrice}}</p>
-                {{end}}
-
+                <p class="card-text">Price: {{.GetCurrency}}{{.GetPrice}}</p>
                 <span class="btn btn-primary">More info!</span>
             </div>
         </a>
@@ -61,6 +57,7 @@
 
 {{else}} NO ITEMS {{end}}
 
+{{if gt .PageLimit 1}}
 <nav>
     <ul class="pagination pagination-lg justify-content-center mb-5">
 
@@ -74,14 +71,21 @@
         </li>
         {{end}}
 
-        <li class="page-item">
-            <a class="page-link" href="/?page=1">1</a>
-        </li>
+        <!--<li class="page-item">-->
+            <!--<a class="page-link" href="/?page=1">1</a>-->
+        <!--</li>-->
 
+        {{if lt .Page .PageLimit}}
         <li class="page-item">
             <a class="page-link" href="/?page={{inc .Page}}">Next</a>
         </li>
+        {{else}}
+        <li class="page-item disabled">
+            <a class="page-link">Next</a>
+        </li>
+        {{end}}
     </ul>
 </nav>
+{{end}}
 
 {{ template "footer" .}} {{end}}

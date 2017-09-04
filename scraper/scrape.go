@@ -21,8 +21,6 @@ const (
 
 func ScrapeHandler(w http.ResponseWriter, r *http.Request) {
 
-	region := location.GetAmazonRegion(w, r)
-	location.SetAmazonEnviromentVars(region)
 	// todo, check env var to stop people hitting this url
 
 	id := chi.URLParam(r, "id")
