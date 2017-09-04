@@ -1,3 +1,7 @@
+body {
+    overflow-y: scroll;
+}
+
 img.flag {
     height: 13px;
     vertical-align: baseline;
@@ -10,4 +14,12 @@ a[data-toggle="dropdown"] {
 
 div.social-container {
     height: 24px;
+}
+
+a.card{
+    color: #212529;
+}
+a.card img.card-img-top{
+    width: 100%;
+    object-fit: cover; /*magic*/
 }

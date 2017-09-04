@@ -7,7 +7,7 @@ TODO
 - Post to social networks automatically
 - Use different country affiliate links for different users
 - check for inserting dupe items into mysql
-- add link redirecting to aff links to track stuff
+- add link redirecting to aff links to track stuff, order by this.
 - add sorting options, hits, time etc, - add indexes
 - max page should be infinite but max page to skip to should be 10
 - pass js files through to the template so they are not on every page
@@ -21,3 +21,7 @@ TODO
 - only show price if not 0
 - do, inline todos
 - change scrap rest endpoint to CLI argument
+- failed amazon items should be saved with an error so it coems from cache next time
+- check for item with no/broken images
+- crop the pictures to be squares?
+- only set the flag os env vars once

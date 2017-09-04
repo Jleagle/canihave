@@ -16,7 +16,10 @@ var perPage int = 94
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 
-	params :=r.URL.Query()
+	region := location.GetAmazonRegion(w, r)
+	location.SetAmazonEnviromentVars(region)
+
+	params := r.URL.Query()
 
 	// Country override
 	flag := r.URL.Query().Get("flag")
@@ -33,6 +36,10 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		page = "1"
 	}
 
+	// Make cache key
+	//cacheMd5 := md5.Sum([]byte("p" + page + ":c" + category + ":s" + search))
+	//cacheKey := string(cacheMd5)
+
 	// Make SQL
 	pageInt, _ := strconv.Atoi(page)
 	if pageInt < 1 {
@@ -40,7 +47,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	conn := store.GetMysqlConnection()
-	query := squirrel.Select("*").From("items")
+	query := squirrel.Select("*").From("items").Where("region = ?", location.GetAmazonRegion(w, r))
 	if search != "" {
 		query = query.Where("name LIKE ?", "%"+search+"%")
 	}
@@ -53,6 +60,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	//fmt.Printf("%v", sql)
 
 	// Run SQL
 	rows, err := conn.Query(sql, args...)
@@ -65,7 +73,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	results := []models.Item{}
 	item := models.Item{}
 	for rows.Next() {
-		err := rows.Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.Name, &item.Link, &item.Source, &item.SalesRank, &item.Photo, &item.ProductGroup, &item.Price, &item.Currency)
+		err := rows.Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.Name, &item.Link, &item.Source, &item.SalesRank, &item.Photo, &item.ProductGroup, &item.Price, &item.Region)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -81,14 +89,15 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Javascript = []string{"//platform.twitter.com/widgets.js"}
 	vars.Flag = location.GetAmazonRegion(w, r)
 	vars.Flags = regions
-	vars.Page = page
+	vars.Page = pageInt
 
 	returnTemplate(w, "search", vars)
 }
 
 type searchVars struct {
 	Items      []models.Item
-	Page       string
+	Page       int
+	LastPage   int //todo
 	Category   string
 	Search     string
 	Search64   string

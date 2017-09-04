@@ -9,7 +9,7 @@ CREATE TABLE `items` (
   `photo`        VARCHAR(255)            NOT NULL DEFAULT '',
   `productGroup` VARCHAR(255)            NOT NULL DEFAULT '',
   `price`        DECIMAL(11, 2) UNSIGNED NOT NULL,
-  `currency`     VARCHAR(255)            NOT NULL DEFAULT ''
+  `region`       VARCHAR(4)              NOT NULL DEFAULT ''
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;

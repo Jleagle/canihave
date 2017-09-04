@@ -8,8 +8,6 @@ import (
 func infoHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := infoVars{}
-	vars.Search = ""
-	vars.Search64 = ""
 	vars.Javascript = []string{"//platform.twitter.com/widgets.js"}
 	vars.Flag = location.GetAmazonRegion(w, r)
 	vars.Flags = regions
@@ -19,8 +17,6 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type infoVars struct {
-	Search     string
-	Search64   string
 	Javascript []string
 	Flag       string
 	Flags      map[string]string

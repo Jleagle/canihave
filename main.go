@@ -13,6 +13,8 @@ import (
 	"github.com/Jleagle/canihave/scraper"
 	"github.com/go-chi/chi"
 	_ "github.com/go-sql-driver/mysql"
+	"reflect"
+	"github.com/Jleagle/canihave/location"
 )
 
 var regions map[string]string
@@ -20,25 +22,19 @@ var regions map[string]string
 func main() {
 
 	regions = map[string]string{
-		"BR": "Brazil",
-		"CA": "Canada",
-		"CN": "China",
-		"DE": "Deutschland",
-		"ES": "España",
-		"FR": "France",
-		"IN": "India",
-		"IT": "Italia",
-		"JP": "Japan",
-		"MX": "Mexico",
-		"UK": "United Kingdom",
-		"US": "United States",
+		location.US: "United States",
+		location.UK: "United Kingdom",
+		location.DE: "Deutschland",
+		location.FR: "France",
+		location.JP: "Japan",
+		location.CA: "Canada",
+		location.CN: "China",
+		location.IT: "Italia",
+		location.ES: "España",
+		location.IN: "India",
+		location.BR: "Brazil",
+		location.MX: "Mexico",
 	}
-
-	//os.Setenv("AWS_PRODUCT_REGION", "UK")
-	//os.Setenv("AWS_ASSOCIATE_TAG", "canihaveone00-21")
-
-	os.Setenv("AWS_PRODUCT_REGION", "US")
-	os.Setenv("AWS_ASSOCIATE_TAG", "canihaveone-20")
 
 	r := chi.NewRouter()
 
@@ -46,6 +42,7 @@ func main() {
 	r.Post("/", searchHandler)
 	r.Get("/info", infoHandler)
 	r.Get("/site-map", siteMapHandler)
+	r.Get("/categories", categoriesHandler)
 	r.Get("/scrape", scraper.ScrapeHandler)
 	r.Get("/scrape/{id}", scraper.ScrapeHandler)
 
@@ -66,7 +63,9 @@ func returnTemplate(w http.ResponseWriter, page string, pageData interface{}) {
 	folder := path.Dir(file)
 
 	// Load templates needed
-	t, err := template.ParseFiles(folder+"/templates/header.html", folder+"/templates/footer.html", folder+"/templates/"+page+".html")
+	always := []string{folder + "/templates/header.html", folder + "/templates/footer.html", folder + "/templates/" + page + ".html"}
+
+	t, err := template.New("t").Funcs(getTemplateFuncMap()).ParseFiles(always...)
 	if err != nil {
 		panic(err)
 	}
@@ -75,6 +74,23 @@ func returnTemplate(w http.ResponseWriter, page string, pageData interface{}) {
 	err = t.ExecuteTemplate(w, page, pageData)
 	if err != nil {
 		panic(err)
+	}
+}
+
+func getTemplateFuncMap() map[string]interface{} {
+	return template.FuncMap{
+		"avail": func(name string, data interface{}) bool {
+			v := reflect.ValueOf(data)
+			if v.Kind() == reflect.Ptr {
+				v = v.Elem()
+			}
+			if v.Kind() != reflect.Struct {
+				return false
+			}
+			return v.FieldByName(name).IsValid()
+		},
+		"inc": func(i int) int { return i + 1 },
+		"dec": func(i int) int { return i - 1 },
 	}
 }
 
@@ -97,10 +113,6 @@ func fileServer(r chi.Router, path string, root http.FileSystem) {
 	r.Get(path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fs.ServeHTTP(w, r)
 	}))
-}
-
-type source struct {
-	Name string
 }
 
 type errorVars struct {

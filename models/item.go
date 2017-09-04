@@ -9,6 +9,9 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
 	"github.com/patrickmn/go-cache"
+	"github.com/Jleagle/canihave/location"
+	"strings"
+	"strconv"
 )
 
 // item is the database row
@@ -24,9 +27,28 @@ type Item struct {
 	Photo        string
 	ProductGroup string
 	Price        string
-	Currency     string
+	Region       string
 
 	Status string
+}
+
+func (i *Item) GetLink() string {
+	if i.Region == location.US {
+		return strings.Replace(i.Link, "www", "smile", 1)
+	}
+	return i.Link
+}
+
+func (i *Item) GetPrice() float32 {
+	x, err := strconv.Atoi(i.Price)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return float32(x) / 100
+}
+
+func (i *Item) GetCurrency() string {
+	return location.GetCurrency(i.Region)
 }
 
 func (i *Item) Get() {
@@ -72,7 +94,7 @@ func (i *Item) getFromMemcache() (found bool) {
 		i.Photo = item.Photo
 		i.ProductGroup = item.ProductGroup
 		i.Price = item.Price
-		i.Currency = item.Currency
+		i.Region = item.Region
 	}
 	return found
 }
@@ -93,7 +115,7 @@ func (i *Item) getFromMysql() (found bool) {
 	}
 
 	db := store.GetMysqlConnection()
-	err = db.QueryRow(sql, args...).Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.ProductGroup, &i.Price, &i.Currency)
+	err = db.QueryRow(sql, args...).Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.ProductGroup, &i.Price, &i.Region)
 	if err != nil {
 		//fmt.Printf("%v", err.Error())
 		return false
@@ -109,13 +131,18 @@ func (i *Item) saveToMysql() {
 	}
 
 	// run query
-	_, err := store.GetInsertPrep().Exec(i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.ProductGroup, i.Price, i.Currency)
+	_, err := store.GetInsertPrep().Exec(i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.ProductGroup, i.Price, i.Region)
 	if err != nil {
 		panic(err.Error())
 	}
 }
 
 func (i *Item) getFromAmazon() (found bool) {
+
+	location.SetAmazonEnviromentVars(i.Region)
+
+	// Amazon rate limit
+	time.Sleep(1100 * time.Millisecond)
 
 	// Setup Amazon
 	client, err := amazon.NewFromEnvionment()
@@ -126,11 +153,13 @@ func (i *Item) getFromAmazon() (found bool) {
 	// Make API call
 	res, err := client.ItemLookup(amazon.ItemLookupParameters{
 		ResponseGroups: []amazon.ItemLookupResponseGroup{
-			amazon.ItemLookupResponseGroupLarge,
+			amazon.ItemLookupResponseGroupMedium,
 		},
 		IDType:  amazon.IDTypeASIN,
 		ItemIDs: []string{i.ID},
 	}).Do()
+
+	//fmt.Printf("%# v", pretty.Formatter(res))
 
 	if err != nil {
 		i.Status = err.Error()
@@ -156,7 +185,6 @@ func (i *Item) getFromAmazon() (found bool) {
 	i.Photo = amazonItem.LargeImage.URL
 	i.ProductGroup = amazonItem.ItemAttributes.ProductGroup
 	i.Price = amazonItem.ItemAttributes.ListPrice.Amount
-	i.Currency = amazonItem.ItemAttributes.ListPrice.CurrencyCode
 
 	return true
 }

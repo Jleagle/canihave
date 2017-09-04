@@ -6,6 +6,23 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strings"
+)
+
+const (
+	BR string = "BR"
+	CA string = "CA"
+	CN string = "CN"
+	DE string = "DE"
+	ES string = "ES"
+	FR string = "FR"
+	IN string = "IN"
+	IT string = "IT"
+	JP string = "JP"
+	MX string = "MX"
+	UK string = "UK"
+	US string = "US"
 )
 
 func getISO(r *http.Request) string {
@@ -22,15 +39,14 @@ func getISO(r *http.Request) string {
 	if header == "" {
 		return ""
 	}
-	fmt.Printf("Looking up location for: %v", header)
 	ip := net.ParseIP(header)
-	fmt.Printf("Looking up location for: %v", ip)
 
 	record, err := db.Country(ip)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	fmt.Printf("Geo Lite Lookup: %v - %v", ip, record.Country.IsoCode)
 	return record.Country.IsoCode
 }
 
@@ -59,11 +75,11 @@ func GetAmazonRegion(w http.ResponseWriter, r *http.Request) string {
 			ret = iso
 		case "UK":
 		case "GB":
-			ret = "UK"
+			ret = UK
+		default:
+			ret = US
 		}
-		ret = "US"
 
-		// Set cookie
 		SetCookie(w, ret)
 	}
 
@@ -78,4 +94,82 @@ func SetCookie(w http.ResponseWriter, flag string) {
 		MaxAge:   0,
 	}
 	http.SetCookie(w, cookie)
+}
+
+func SetAmazonEnviromentVars(region string) {
+
+	os.Setenv("AWS_PRODUCT_REGION", region)
+
+	switch region {
+	case "BR":
+		os.Setenv("AWS_ASSOCIATE_TAG", "")
+	case "CA":
+		os.Setenv("AWS_ASSOCIATE_TAG", "")
+	case "CN":
+		os.Setenv("AWS_ASSOCIATE_TAG", "")
+	case "DE":
+		os.Setenv("AWS_ASSOCIATE_TAG", "")
+	case "ES":
+		os.Setenv("AWS_ASSOCIATE_TAG", "")
+	case "FR":
+		os.Setenv("AWS_ASSOCIATE_TAG", "")
+	case "IN":
+		os.Setenv("AWS_ASSOCIATE_TAG", "")
+	case "IT":
+		os.Setenv("AWS_ASSOCIATE_TAG", "")
+	case "JP":
+		os.Setenv("AWS_ASSOCIATE_TAG", "")
+	case "MX":
+		os.Setenv("AWS_ASSOCIATE_TAG", "")
+	case "UK":
+		os.Setenv("AWS_ASSOCIATE_TAG", "canihaveone00-21")
+	case "US":
+		os.Setenv("AWS_ASSOCIATE_TAG", "canihaveone-20")
+	}
+}
+
+func TLDToRegion(tld string) string {
+	switch tld {
+	case "BR":
+	case "CA":
+	case "CN":
+	case "DE":
+	case "ES":
+	case "FR":
+	case "IN":
+	case "IT":
+	case "JP":
+	case "MX":
+	case "uk":
+		return strings.ToUpper(tld)
+	}
+
+	return US
+}
+
+func GetCurrency(region string) string {
+
+	switch region {
+	case "BR":
+		return "R$"
+	case "CA":
+	case "US":
+	case "MX":
+		return "$"
+	case "CN":
+		return "¥"
+	case "DE":
+	case "ES":
+	case "FR":
+	case "IT":
+		return "€"
+	case "IN":
+		return "₹"
+	case "JP":
+		return "¥"
+	case "uk":
+		return "£"
+	}
+
+	return ""
 }

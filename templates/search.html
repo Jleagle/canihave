@@ -42,18 +42,18 @@
     {{ range .Items }}
 
     <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-4">
-        <div class="card">
+        <a class="card" href="{{.GetLink}}" target="_blank">
             <img class="card-img-top" src="{{.Photo}}" alt="{{ .Name }}">
             <div class="card-body">
                 <h6 class="card-title">{{ .Name }}</h6>
 
                 {{if .Price }}
-                <p class="card-text">Price: {{.Price}} {{.Currency}}</p>
+                <p class="card-text">Price: {{.Price }}-{{.GetPrice}}</p>
                 {{end}}
 
-                <a href="{{.Link}}" class="btn btn-primary" target="_blank">More info!</a>
+                <span class="btn btn-primary">More info!</span>
             </div>
-        </div>
+        </a>
     </div>
 
     {{ end }}
@@ -63,14 +63,23 @@
 
 <nav>
     <ul class="pagination pagination-lg justify-content-center mb-5">
-        <li class="page-item disabled">
-            <a class="page-link" href="#" tabindex="-1">Previous</a>
+
+        {{if gt .Page 1}}
+        <li class="page-item">
+            <a class="page-link" href="/?page={{dec .Page}}">Previous</a>
         </li>
+        {{else}}
+        <li class="page-item disabled">
+            <a class="page-link">Previous</a>
+        </li>
+        {{end}}
+
         <li class="page-item">
             <a class="page-link" href="/?page=1">1</a>
         </li>
+
         <li class="page-item">
-            <a class="page-link" href="#">Next</a>
+            <a class="page-link" href="/?page={{inc .Page}}">Next</a>
         </li>
     </ul>
 </nav>

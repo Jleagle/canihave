@@ -1,0 +1,13 @@
+{{define "categories"}} {{ template "header" .}}
+
+<h1>Categories</h1>
+
+{{ range .Items }}
+
+<div>
+    <a href="/?category=todo">{{.Category}} ({{.Count}})</a>
+</div>
+
+{{ end }}
+
+{{ template "footer" }} {{end}}
