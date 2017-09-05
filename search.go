@@ -18,12 +18,7 @@ var perPage int = 94
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 
-	// Flag override
-	flag := r.URL.Query().Get("flag")
-	if flag != "" {
-		location.SetCookie(w, flag)
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-	}
+	location.ChangeLanguage(w, r)
 
 	// Get data
 	params := r.URL.Query()
@@ -34,13 +29,11 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	pageLimit := getPageLimit(search, category, region)
 
-
 	page := params.Get("page")
 	if page == "" {
 		page = "1"
 	}
 	pageInt, _ := strconv.Atoi(page)
-
 
 	if pageInt < 1 {
 		pageInt = 1
@@ -62,6 +55,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Flags = regions
 	vars.Page = pageInt
 	vars.PageLimit = pageLimit
+	vars.Path = r.URL.Path
 
 	returnTemplate(w, "search", vars)
 }
@@ -149,6 +143,7 @@ func runQueryRow(queryBuilder squirrel.SelectBuilder) (*sql.Row) {
 }
 
 type searchVars struct {
+	Path       string
 	Items      []models.Item
 	Page       int
 	PageLimit  int

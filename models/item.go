@@ -114,8 +114,8 @@ func (i *Item) getFromMysql() (found bool) {
 		fmt.Println(err)
 	}
 
-	db := store.GetMysqlConnection()
-	err = db.QueryRow(sql, args...).Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.ProductGroup, &i.Price, &i.Region)
+	conn := store.GetMysqlConnection()
+	err = conn.QueryRow(sql, args...).Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.ProductGroup, &i.Price, &i.Region)
 	if err != nil {
 		//fmt.Printf("%v", err.Error())
 		return false

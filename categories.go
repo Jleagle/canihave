@@ -9,9 +9,12 @@ import (
 
 func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 
+	location.ChangeLanguage(w, r)
+
+	region := location.GetAmazonRegion(w, r)
 	conn := store.GetMysqlConnection()
 
-	rows, err := conn.Query("SELECT productGroup AS category, count(productGroup) AS count FROM items GROUP BY productGroup ORDER BY count DESC")
+	rows, err := conn.Query("SELECT productGroup AS category, count(productGroup) AS `count` FROM items WHERE region = ? GROUP BY productGroup ORDER BY count DESC", region)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -32,6 +35,7 @@ func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Flag = location.GetAmazonRegion(w, r)
 	vars.Flags = regions
 	vars.Items = results
+	vars.Path = r.URL.Path
 
 	returnTemplate(w, "categories", vars)
 }
@@ -42,6 +46,7 @@ type category struct {
 }
 
 type categoriesVars struct {
+	Path  string
 	Name  string
 	Size  int
 	Flag  string

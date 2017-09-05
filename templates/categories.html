@@ -2,11 +2,19 @@
 
 <h1>Categories</h1>
 
+{{if .Items}}
+
 {{ range .Items }}
 
 <div>
     <a href="/?category=todo">{{.Category}} ({{.Count}})</a>
 </div>
+
+{{ end }}
+
+{{else}}
+
+No items have been found for this country
 
 {{ end }}
 

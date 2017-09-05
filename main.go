@@ -19,6 +19,12 @@ import (
 
 var regions map[string]string
 
+const (
+	SEARCH string = "SEARCH"
+	CATEGORIES string = "CATEGORIES"
+	INFO string = "INFO"
+)
+
 func main() {
 
 	regions = map[string]string{

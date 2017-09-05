@@ -13,3 +13,13 @@ CREATE TABLE `items` (
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
+
+CREATE TABLE `categories` (
+  `id`     INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `amazon` VARCHAR(255)     NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `amazon` (`amazon`)
+)
+  ENGINE = InnoDB
+  AUTO_INCREMENT = 1
+  DEFAULT CHARSET = utf8;

@@ -55,7 +55,11 @@
     {{ end }}
 </div>
 
-{{else}} NO ITEMS {{end}}
+{{else}}
+
+NO ITEMS
+
+{{end}}
 
 {{if gt .PageLimit 1}}
 <nav>
@@ -72,7 +76,7 @@
         {{end}}
 
         <!--<li class="page-item">-->
-            <!--<a class="page-link" href="/?page=1">1</a>-->
+        <!--<a class="page-link" href="/?page=1">1</a>-->
         <!--</li>-->
 
         {{if lt .Page .PageLimit}}

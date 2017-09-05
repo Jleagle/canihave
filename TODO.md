@@ -1,12 +1,10 @@
 TODO
 ====
 
-- google site map
 - Post to social networks automatically
 - check for inserting dupe items into mysql
 - add link redirecting to aff links to track stuff, order by this.
 - add sorting options, hits, time etc, - add indexes
-- finish fb graph tags
 - grab items from trending/top sellers
 - only show price if not 0
 - change rest endpoint to CLI argument
@@ -16,3 +14,9 @@ TODO
 - use godep and add to deploy script
 - when scraping, cache a list of all items and check against it so not to do any queries
 - filter categories by the current flag
+
+Item Pages
+==========
+
+- google site map
+- finish fb graph tags

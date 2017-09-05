@@ -148,3 +148,12 @@ func GetCurrency(region string) string {
 
 	return ""
 }
+
+func ChangeLanguage(w http.ResponseWriter, r *http.Request){
+
+	flag := r.URL.Query().Get("flag")
+	if flag != "" {
+		SetCookie(w, flag)
+		http.Redirect(w, r, r.URL.Path, http.StatusSeeOther)
+	}
+}
