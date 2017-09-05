@@ -71,7 +71,7 @@
                 {{if (avail "Category" .)}}
                 <input type="hidden" name="cat" value="{{.Category}}">
                 {{end}}
-                {{if (avail "Search" .)}}{{.Search}}
+                {{if (avail "Search" .)}}
                 <input class="form-control mr-sm-2" placeholder="Search" name="search" value="{{.Search}}" required>
                 {{else}}
                 <input class="form-control mr-sm-2" placeholder="Search" name="search" required>

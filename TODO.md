@@ -13,3 +13,6 @@ TODO
 - failed amazon items should be saved with an error so it coems from cache next time
 - check for item with no/broken images
 - crop the pictures to be squares?
+- use godep and add to deploy script
+- when scraping, cache a list of all items and check against it so not to do any queries
+- filter categories by the current flag
