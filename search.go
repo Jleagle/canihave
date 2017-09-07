@@ -5,20 +5,19 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"math"
 
 	"github.com/Jleagle/canihave/models"
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
 	"github.com/Jleagle/canihave/location"
-	"database/sql"
-	"math"
 )
 
 var perPage int = 94
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 
-	location.ChangeLanguage(w, r)
+	location.DetectLanguageChange(w, r)
 
 	// Get data
 	params := r.URL.Query()
@@ -51,7 +50,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Search = search
 	vars.Search64 = base64.StdEncoding.EncodeToString([]byte(search))
 	vars.Javascript = []string{"//platform.twitter.com/widgets.js"}
-	vars.Flag = location.GetAmazonRegion(w, r)
+	vars.Flag = region
 	vars.Flags = regions
 	vars.Page = pageInt
 	vars.PageLimit = pageLimit
@@ -63,11 +62,12 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 func getResults(search string, category string, region string, page int) []models.Item {
 
 	offset := uint64((page - 1) * perPage)
+	fmt.Printf("%v-1 * %v = %v", page, perPage, offset)
 
-	query := squirrel.Select("*").From("items").OrderBy("dateCreated DESC").Limit(uint64(perPage)).Offset(offset)
+	query := squirrel.Select("*").From("items").OrderBy("region = '" + region + "' DESC, dateCreated DESC").Limit(uint64(perPage)).Offset(offset)
 	query = filter(query, search, category, region)
 
-	rows := runQueryRows(query)
+	rows := store.QueryRows(query)
 	defer rows.Close()
 
 	// Convert to types
@@ -91,7 +91,7 @@ func getPageLimit(search string, category string, region string) int {
 	query = filter(query, search, category, region)
 
 	var count int
-	err := runQueryRow(query).Scan(&count)
+	err := store.QueryRow(query).Scan(&count)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -102,7 +102,7 @@ func getPageLimit(search string, category string, region string) int {
 
 func filter(query squirrel.SelectBuilder, search string, category string, region string) (squirrel.SelectBuilder) {
 
-	query = query.Where("region = ?", region)
+	//query = query.Where("region = ?", region)
 
 	if search != "" {
 		query = query.Where("name LIKE ?", "%"+search+"%")
@@ -113,33 +113,6 @@ func filter(query squirrel.SelectBuilder, search string, category string, region
 	}
 
 	return query
-}
-
-func runQueryRows(queryBuilder squirrel.SelectBuilder) (*sql.Rows) {
-
-	rawSQL, args, err := queryBuilder.ToSql()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	// Run SQL
-	rows, err := store.GetMysqlConnection().Query(rawSQL, args...)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return rows
-}
-
-func runQueryRow(queryBuilder squirrel.SelectBuilder) (*sql.Row) {
-
-	rawSQL, args, err := queryBuilder.ToSql()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	// Run SQL
-	return store.GetMysqlConnection().QueryRow(rawSQL, args...)
 }
 
 type searchVars struct {

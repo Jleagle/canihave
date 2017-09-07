@@ -1,25 +1,22 @@
 CREATE TABLE `items` (
-  `id`           VARCHAR(11)      NOT NULL DEFAULT '',
-  `dateCreated`  DATETIME         NOT NULL,
-  `dateUpdated`  DATETIME         NOT NULL,
-  `name`         VARCHAR(255)     NOT NULL,
-  `link`         VARCHAR(255)     NOT NULL,
-  `source`       VARCHAR(255)     NOT NULL DEFAULT '',
-  `salesRank`    INT(11) UNSIGNED NOT NULL,
-  `photo`        VARCHAR(255)     NOT NULL DEFAULT '',
-  `productGroup` VARCHAR(255)     NOT NULL DEFAULT '',
-  `price`        INT(11) UNSIGNED NOT NULL,
-  `region`       VARCHAR(4)       NOT NULL DEFAULT ''
-)
-  ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+  `id` varchar(10) NOT NULL DEFAULT '',
+  `dateCreated` datetime NOT NULL,
+  `dateUpdated` datetime NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `link` varchar(255) NOT NULL,
+  `source` varchar(255) NOT NULL DEFAULT '',
+  `salesRank` int(10) unsigned NOT NULL,
+  `photo` varchar(255) NOT NULL DEFAULT '',
+  `productGroup` varchar(255) NOT NULL DEFAULT '',
+  `price` int(10) unsigned NOT NULL,
+  `region` varchar(4) NOT NULL DEFAULT '',
+  `hits` int(10) unsigned NOT NULL DEFAULT '0',
+  `status` varchar(255) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `categories` (
-  `id`     INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `amazon` VARCHAR(255)     NOT NULL DEFAULT '',
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `amazon` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `amazon` (`amazon`)
-)
-  ENGINE = InnoDB
-  AUTO_INCREMENT = 1
-  DEFAULT CHARSET = utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

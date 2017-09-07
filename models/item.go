@@ -10,8 +10,10 @@ import (
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
 	"github.com/patrickmn/go-cache"
 	"github.com/Jleagle/canihave/location"
+	amaz "github.com/Jleagle/canihave/amazon"
 	"strings"
 	"strconv"
+	"github.com/metal3d/go-slugify"
 )
 
 // item is the database row
@@ -32,11 +34,16 @@ type Item struct {
 	Status string
 }
 
-func (i *Item) GetLink() string {
+func (i *Item) GetAmazonLink() string {
 	if i.Region == location.US {
 		return strings.Replace(i.Link, "www", "smile", 1)
 	}
 	return i.Link
+}
+
+func (i *Item) GetDetailsLink() string {
+	slug := slugify.Marshal(i.Name, true)
+	return "/" + i.ID + "/" + slug
 }
 
 func (i *Item) GetPrice() float32 {
@@ -51,7 +58,15 @@ func (i *Item) GetCurrency() string {
 	return location.GetCurrency(i.Region)
 }
 
+func (i *Item) GetFlag() string {
+	return "/assets/flags/" + i.Region + ".gif"
+}
+
 func (i *Item) Get() {
+
+	if i.Status != "" {
+		return
+	}
 
 	if i.ID == "" {
 		log.Fatal("Item needs an id")
@@ -144,22 +159,7 @@ func (i *Item) getFromAmazon() (found bool) {
 	// Amazon rate limit
 	time.Sleep(1100 * time.Millisecond)
 
-	// Setup Amazon
-	client, err := amazon.NewFromEnvionment()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Make API call
-	res, err := client.ItemLookup(amazon.ItemLookupParameters{
-		ResponseGroups: []amazon.ItemLookupResponseGroup{
-			amazon.ItemLookupResponseGroupMedium,
-		},
-		IDType:  amazon.IDTypeASIN,
-		ItemIDs: []string{i.ID},
-	}).Do()
-
-	//fmt.Printf("%# v", pretty.Formatter(res))
+	res, err := amaz.GetItemDetails(i.ID)
 
 	if err != nil {
 		i.Status = err.Error()

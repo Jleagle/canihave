@@ -7,7 +7,7 @@ import (
 
 func infoHandler(w http.ResponseWriter, r *http.Request) {
 
-	location.ChangeLanguage(w, r)
+	location.DetectLanguageChange(w, r)
 
 	vars := infoVars{}
 	vars.Javascript = []string{"//platform.twitter.com/widgets.js"}

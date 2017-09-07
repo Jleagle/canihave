@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"github.com/ngs/go-amazon-product-advertising-api/amazon"
 )
 
 const (
@@ -50,40 +51,42 @@ func getISO(r *http.Request) string {
 	return record.Country.IsoCode
 }
 
-func GetAmazonRegion(w http.ResponseWriter, r *http.Request) string {
+func GetAmazonRegion(w http.ResponseWriter, r *http.Request) (region string) {
 
-	var ret string
-
-	var cookie, err = r.Cookie("flag")
-	if err == nil {
-		ret = cookie.Value
+	var value string
+	var cookie, err = r.Cookie("region")
+	if err == nil && cookie.Value != "" {
+		value = cookie.Value
 	} else {
 
 		iso := getISO(r)
 
 		switch iso {
 		case "BR", "CA", "CN", "DE", "ES", "FR", "IN", "IT", "JP", "MX":
-			ret = iso
+			value = iso
 		case "UK", "GB":
-			ret = UK
+			value = UK
 		default:
-			ret = US
+			value = US
 		}
 
-		SetCookie(w, ret)
+		setCookie(w, amazon.Region(value))
 	}
 
-	return ret
+	return value
 }
 
-func SetCookie(w http.ResponseWriter, flag string) {
-	cookie := &http.Cookie{
-		Name:     "flag",
-		Value:    flag,
-		HttpOnly: false,
-		MaxAge:   0,
+func setCookie(w http.ResponseWriter, region amazon.Region) {
+
+	if region.IsValid() {
+		cookie := &http.Cookie{
+			Name:     "region",
+			Value:    string(region),
+			HttpOnly: false,
+			MaxAge:   0,
+		}
+		http.SetCookie(w, cookie)
 	}
-	http.SetCookie(w, cookie)
 }
 
 func SetAmazonEnviromentVars(region string) {
@@ -149,11 +152,12 @@ func GetCurrency(region string) string {
 	return ""
 }
 
-func ChangeLanguage(w http.ResponseWriter, r *http.Request){
+func DetectLanguageChange(w http.ResponseWriter, r *http.Request) {
 
-	flag := r.URL.Query().Get("flag")
-	if flag != "" {
-		SetCookie(w, flag)
+	region := r.URL.Query().Get("region")
+	if region != "" {
+		setCookie(w, amazon.Region(region))
 		http.Redirect(w, r, r.URL.Path, http.StatusSeeOther)
+		return
 	}
 }

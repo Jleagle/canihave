@@ -15,17 +15,21 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"reflect"
 	"github.com/Jleagle/canihave/location"
+	amaz "github.com/Jleagle/canihave/amazon"
+	"time"
 )
 
 var regions map[string]string
 
 const (
-	SEARCH string = "SEARCH"
+	SEARCH     string = "SEARCH"
 	CATEGORIES string = "CATEGORIES"
-	INFO string = "INFO"
+	INFO       string = "INFO"
 )
 
 func main() {
+
+	amaz.RateLimit = time.Tick(time.Millisecond * 1100)
 
 	regions = map[string]string{
 		location.US: "United States",
@@ -51,6 +55,8 @@ func main() {
 	r.Get("/categories", categoriesHandler)
 	r.Get("/scrape", scraper.ScrapeHandler)
 	r.Get("/scrape/{id}", scraper.ScrapeHandler)
+	r.Get("/{id}", itemHandler)
+	r.Get("/{id}/{slug}", itemHandler)
 
 	workDir, _ := os.Getwd()
 	filesDir := filepath.Join(workDir, "assets")

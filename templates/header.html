@@ -59,7 +59,7 @@
                     </a>
                     <div class="dropdown-menu">
                         {{ range $key, $val := .Flags }}
-                        <a class="dropdown-item" href="{{$.Path}}?flag={{$key}}">
+                        <a class="dropdown-item" href="{{$.Path}}?region={{$key}}">
                             <img class="flag" src="/assets/flags/{{$key}}.gif" alt="{{$val}}">{{$val}}
                         </a>
                         {{ end }}

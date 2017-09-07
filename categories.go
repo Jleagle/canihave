@@ -9,12 +9,10 @@ import (
 
 func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 
-	location.ChangeLanguage(w, r)
+	location.DetectLanguageChange(w, r)
 
-	region := location.GetAmazonRegion(w, r)
 	conn := store.GetMysqlConnection()
-
-	rows, err := conn.Query("SELECT productGroup AS category, count(productGroup) AS `count` FROM items WHERE region = ? GROUP BY productGroup ORDER BY count DESC", region)
+	rows, err := conn.Query("SELECT productGroup AS category, count(productGroup) AS `count` FROM items GROUP BY productGroup ORDER BY count DESC")
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -13,7 +13,6 @@ import (
 )
 
 const (
-	Import           string = "import"
 	ShitYouCanAfford string = "shityoucanafford"
 	WannaSpend       string = "wannaspend"
 	DatTwenty        string = "dattwenty"

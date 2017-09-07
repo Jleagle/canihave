@@ -1,0 +1,60 @@
+{
+	"ImportPath": "github.com/Jleagle/canihave",
+	"GoVersion": "go1.9",
+	"GodepVersion": "v79",
+	"Deps": [
+		{
+			"ImportPath": "github.com/Masterminds/squirrel",
+			"Rev": "a6b93000bd219143c56c16e6cb1c4b91da3f224b"
+		},
+		{
+			"ImportPath": "github.com/go-chi/chi",
+			"Comment": "v3.0.0",
+			"Rev": "967844826e58cf31213a7dfb82455d242ad85101"
+		},
+		{
+			"ImportPath": "github.com/go-sql-driver/mysql",
+			"Comment": "v1.3-26-g8fefef0",
+			"Rev": "8fefef06da7707b5a3cda42195a6b409c9c9ab5c"
+		},
+		{
+			"ImportPath": "github.com/lann/builder",
+			"Rev": "f22ce00fd9394014049dad11c244859432bd6820"
+		},
+		{
+			"ImportPath": "github.com/lann/ps",
+			"Rev": "62de8c46ede02a7675c4c79c84883eb164cb71e3"
+		},
+		{
+			"ImportPath": "github.com/metal3d/go-slugify",
+			"Rev": "7ac2014b2f23e254684c08d597496681d12c6a8a"
+		},
+		{
+			"ImportPath": "github.com/ngs/go-amazon-product-advertising-api/amazon",
+			"Rev": "61566202d7a2a0e9cd8b36c4208b6f96b72ccf2b"
+		},
+		{
+			"ImportPath": "github.com/oschwald/geoip2-golang",
+			"Comment": "v1.1.0",
+			"Rev": "5b1dc16861f81d05d9836bb21c2d0d65282fc0b8"
+		},
+		{
+			"ImportPath": "github.com/oschwald/maxminddb-golang",
+			"Comment": "v1.2.0",
+			"Rev": "d19f6d453e836d12ee8fe895d0494421e93ef8c1"
+		},
+		{
+			"ImportPath": "github.com/patrickmn/go-cache",
+			"Comment": "v2.0.0-11-ga3647f8",
+			"Rev": "a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "bb24a47a89eac6c1227fbcb2ae37a8b9ed323366"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/windows",
+			"Rev": "bb24a47a89eac6c1227fbcb2ae37a8b9ed323366"
+		}
+	]
+}

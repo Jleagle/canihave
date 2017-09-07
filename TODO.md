@@ -14,9 +14,16 @@ TODO
 - use godep and add to deploy script
 - when scraping, cache a list of all items and check against it so not to do any queries
 - filter categories by the current flag
+- rate limit amazon calls - https://github.com/golang/go/wiki/RateLimiting
+- use the region enum built into amazon package instead
 
 Item Pages
 ==========
 
+- Make item pages
 - google site map
 - finish fb graph tags
+- similar items
+- top items in same node
+- track hits
+- add reviews

@@ -8,6 +8,11 @@ img.flag {
     margin-right: 5px;
 }
 
+img.buy-at-amazon{
+    height: 17px;
+    margin-right: 5px;
+}
+
 a[data-toggle="dropdown"] {
     cursor: pointer;
 }
