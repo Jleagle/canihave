@@ -36,7 +36,7 @@ func GetInsertPrep() *sql.Stmt {
 		conn := GetMysqlConnection()
 
 		var err error
-		mysqlInsertItem, err = conn.Prepare("INSERT INTO items (id, dateCreated, dateUpdated, name, link, source, salesRank, photo, productGroup, price, region) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+		mysqlInsertItem, err = conn.Prepare("INSERT INTO items (id, dateCreated, dateUpdated, name, link, source, salesRank, photo, productGroup, price, region, hits, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 		if err != nil {
 			panic(err.Error())
 		}

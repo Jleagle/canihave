@@ -27,6 +27,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	category := params.Get("cat")
 
 	pageLimit := getPageLimit(search, category, region)
+	pageLimit = int(math.Max(float64(pageLimit), 1))
 
 	page := params.Get("page")
 	if page == "" {
@@ -55,6 +56,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Page = pageInt
 	vars.PageLimit = pageLimit
 	vars.Path = r.URL.Path
+	vars.WebPage = SEARCH
 
 	returnTemplate(w, "search", vars)
 }
@@ -62,7 +64,6 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 func getResults(search string, category string, region string, page int) []models.Item {
 
 	offset := uint64((page - 1) * perPage)
-	fmt.Printf("%v-1 * %v = %v", page, perPage, offset)
 
 	query := squirrel.Select("*").From("items").OrderBy("region = '" + region + "' DESC, dateCreated DESC").Limit(uint64(perPage)).Offset(offset)
 	query = filter(query, search, category, region)
@@ -74,7 +75,7 @@ func getResults(search string, category string, region string, page int) []model
 	results := []models.Item{}
 	item := models.Item{}
 	for rows.Next() {
-		err := rows.Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.Name, &item.Link, &item.Source, &item.SalesRank, &item.Photo, &item.ProductGroup, &item.Price, &item.Region)
+		err := rows.Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.Name, &item.Link, &item.Source, &item.SalesRank, &item.Photo, &item.ProductGroup, &item.Price, &item.Region, &item.Hits, &item.Status)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -126,4 +127,5 @@ type searchVars struct {
 	Javascript []string
 	Flag       string
 	Flags      map[string]string
+	WebPage    string
 }

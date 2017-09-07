@@ -26,6 +26,11 @@ const (
 	US string = "US"
 )
 
+func IsValidRegion(region string) (result bool) {
+	reg := amazon.Region(region)
+	return reg.IsValid()
+}
+
 func getISO(r *http.Request) string {
 
 	// Connect to database
@@ -70,18 +75,18 @@ func GetAmazonRegion(w http.ResponseWriter, r *http.Request) (region string) {
 			value = US
 		}
 
-		setCookie(w, amazon.Region(value))
+		setCookie(w, value)
 	}
 
 	return value
 }
 
-func setCookie(w http.ResponseWriter, region amazon.Region) {
+func setCookie(w http.ResponseWriter, region string) {
 
-	if region.IsValid() {
+	if IsValidRegion(region) {
 		cookie := &http.Cookie{
 			Name:     "region",
-			Value:    string(region),
+			Value:    region,
 			HttpOnly: false,
 			MaxAge:   0,
 		}
@@ -89,36 +94,36 @@ func setCookie(w http.ResponseWriter, region amazon.Region) {
 	}
 }
 
-func SetAmazonEnviromentVars(region string) {
-
-	os.Setenv("AWS_PRODUCT_REGION", region)
+func GetAmazonTag(region string) (tag string) {
 
 	switch region {
 	case BR:
-		os.Setenv("AWS_ASSOCIATE_TAG", "")
+		return ""
 	case CA:
-		os.Setenv("AWS_ASSOCIATE_TAG", "")
+		return ""
 	case CN:
-		os.Setenv("AWS_ASSOCIATE_TAG", "")
+		return ""
 	case DE:
-		os.Setenv("AWS_ASSOCIATE_TAG", "")
+		return ""
 	case ES:
-		os.Setenv("AWS_ASSOCIATE_TAG", "")
+		return ""
 	case FR:
-		os.Setenv("AWS_ASSOCIATE_TAG", "")
+		return ""
 	case IN:
-		os.Setenv("AWS_ASSOCIATE_TAG", "")
+		return ""
 	case IT:
-		os.Setenv("AWS_ASSOCIATE_TAG", "")
+		return ""
 	case JP:
-		os.Setenv("AWS_ASSOCIATE_TAG", "")
+		return ""
 	case MX:
-		os.Setenv("AWS_ASSOCIATE_TAG", "")
+		return ""
 	case UK:
-		os.Setenv("AWS_ASSOCIATE_TAG", "canihaveone00-21")
+		return "canihaveone00-21"
 	case US:
-		os.Setenv("AWS_ASSOCIATE_TAG", "canihaveone-20")
+		return "canihaveone-20"
 	}
+
+	return ""
 }
 
 func TLDToRegion(tld string) string {
@@ -156,7 +161,7 @@ func DetectLanguageChange(w http.ResponseWriter, r *http.Request) {
 
 	region := r.URL.Query().Get("region")
 	if region != "" {
-		setCookie(w, amazon.Region(region))
+		setCookie(w, region)
 		http.Redirect(w, r, r.URL.Path, http.StatusSeeOther)
 		return
 	}

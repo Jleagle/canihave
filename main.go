@@ -25,11 +25,12 @@ const (
 	SEARCH     string = "SEARCH"
 	CATEGORIES string = "CATEGORIES"
 	INFO       string = "INFO"
+	ITEM       string = "ITEM"
 )
 
 func main() {
 
-	amaz.RateLimit = time.Tick(time.Millisecond * 1100)
+	amaz.RateLimit = time.Tick(time.Millisecond * 1200)
 
 	regions = map[string]string{
 		location.US: "United States",

@@ -34,6 +34,7 @@ func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Flags = regions
 	vars.Items = results
 	vars.Path = r.URL.Path
+	vars.WebPage = CATEGORIES
 
 	returnTemplate(w, "categories", vars)
 }
@@ -44,10 +45,11 @@ type category struct {
 }
 
 type categoriesVars struct {
-	Path  string
-	Name  string
-	Size  int
-	Flag  string
-	Flags map[string]string
-	Items []category
+	Path    string
+	Name    string
+	Size    int
+	Flag    string
+	Flags   map[string]string
+	Items   []category
+	WebPage string
 }

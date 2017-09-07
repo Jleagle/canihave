@@ -14,12 +14,14 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Flag = location.GetAmazonRegion(w, r)
 	vars.Flags = regions
 	vars.Path = r.URL.Path
+	vars.WebPage = INFO
 
 	returnTemplate(w, "info", vars)
 	return
 }
 
 type infoVars struct {
+	WebPage    string
 	Path       string
 	Javascript []string
 	Flag       string

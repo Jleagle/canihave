@@ -29,10 +29,13 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	item.IncrementHits()
+
 	// Return template
 	vars := itemVars{}
 	vars.Item = item
 	vars.Javascript = []string{"//platform.twitter.com/widgets.js"}
+	vars.WebPage = ITEM
 
 	returnTemplate(w, "item", vars)
 	return
@@ -41,4 +44,5 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 type itemVars struct {
 	Item       models.Item
 	Javascript []string
+	WebPage    string
 }

@@ -30,8 +30,8 @@ type Item struct {
 	ProductGroup string
 	Price        string
 	Region       string
-
-	Status string
+	Hits         int
+	Status       string
 }
 
 func (i *Item) GetAmazonLink() string {
@@ -62,6 +62,19 @@ func (i *Item) GetFlag() string {
 	return "/assets/flags/" + i.Region + ".gif"
 }
 
+func (i *Item) IncrementHits() (item Item) {
+
+	conn := store.GetMysqlConnection()
+	_, err := conn.Exec("UPDATE items SET hits = hits + 1 WHERE id = ?", i.ID)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	i.Hits++
+
+	return item
+}
+
 func (i *Item) Get() {
 
 	if i.Status != "" {
@@ -88,17 +101,32 @@ func (i *Item) Get() {
 	// Get from Amazon
 	if i.getFromAmazon() {
 		fmt.Println("Retrieving " + i.ID + " from Amazon")
-		i.saveToMysql()
+		i.saveAsNewMysqlRow()
 		i.saveToMemcache()
 		return
+	}
+
+	// Save errors into cache too
+	if strings.Contains(i.Status, "AWS.InvalidParameterValue"){
+
+		i.saveAsNewMysqlRow()
+		i.saveToMemcache()
+
+	}else if strings.Contains(i.Status, "RequestThrottled"){
+
 	}
 }
 
 func (i *Item) getFromMemcache() (found bool) {
 
+	return i.getFromMysql() //todo, remove this and fix method
+
+
 	foo, found := store.GetGoCache().Get(i.ID)
 	if found {
+		fmt.Printf("%v", foo)
 		item, _ := foo.(Item) // Cast it back to item
+		fmt.Printf("%v", item)
 
 		i.DateCreated = item.DateCreated
 		i.DateUpdated = item.DateUpdated
@@ -110,6 +138,8 @@ func (i *Item) getFromMemcache() (found bool) {
 		i.ProductGroup = item.ProductGroup
 		i.Price = item.Price
 		i.Region = item.Region
+		i.Hits = item.Hits
+		i.Status = item.Status
 	}
 	return found
 }
@@ -130,7 +160,7 @@ func (i *Item) getFromMysql() (found bool) {
 	}
 
 	conn := store.GetMysqlConnection()
-	err = conn.QueryRow(sql, args...).Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.ProductGroup, &i.Price, &i.Region)
+	err = conn.QueryRow(sql, args...).Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.ProductGroup, &i.Price, &i.Region, &i.Hits, &i.Status)
 	if err != nil {
 		//fmt.Printf("%v", err.Error())
 		return false
@@ -139,14 +169,14 @@ func (i *Item) getFromMysql() (found bool) {
 	return true
 }
 
-func (i *Item) saveToMysql() {
+func (i *Item) saveAsNewMysqlRow() {
 
 	if i.Price == "" {
 		i.Price = "0"
 	}
 
 	// run query
-	_, err := store.GetInsertPrep().Exec(i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.ProductGroup, i.Price, i.Region)
+	_, err := store.GetInsertPrep().Exec(i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.ProductGroup, i.Price, i.Region, i.Hits, i.Status)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -154,12 +184,7 @@ func (i *Item) saveToMysql() {
 
 func (i *Item) getFromAmazon() (found bool) {
 
-	location.SetAmazonEnviromentVars(i.Region)
-
-	// Amazon rate limit
-	time.Sleep(1100 * time.Millisecond)
-
-	res, err := amaz.GetItemDetails(i.ID)
+	response, err := amaz.GetItemDetails(*i)
 
 	if err != nil {
 		i.Status = err.Error()
@@ -168,8 +193,8 @@ func (i *Item) getFromAmazon() (found bool) {
 	}
 
 	var amazonItem amazon.Item
-	if len(res.Items.Item) > 0 {
-		amazonItem = res.Items.Item[0]
+	if len(response.Items.Item) > 0 {
+		amazonItem = response.Items.Item[0]
 	} else {
 		i.Status = "Not found in Amazon"
 		return false
@@ -185,6 +210,7 @@ func (i *Item) getFromAmazon() (found bool) {
 	i.Photo = amazonItem.LargeImage.URL
 	i.ProductGroup = amazonItem.ItemAttributes.ProductGroup
 	i.Price = amazonItem.ItemAttributes.ListPrice.Amount
+	i.Hits = 1
 
 	return true
 }

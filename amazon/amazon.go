@@ -5,59 +5,74 @@ import (
 	"log"
 	"time"
 	"fmt"
+	"os"
+	"github.com/Jleagle/canihave/location"
+	"github.com/Jleagle/canihave/models"
 )
 
 var RateLimit <-chan time.Time
 
-func GetItemDetails(id string) (*amazon.ItemLookupResponse, error) {
+func getAmazonClient(region string) (client *amazon.Client) {
 
-	client := getAmazonClient()
+	client, err := amazon.New(
+		os.Getenv("AWS_ACCESS_KEY_ID"),
+		os.Getenv("AWS_SECRET_ACCESS_KEY"),
+		location.GetAmazonTag(region),
+		amazon.Region(region),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return client
+}
+
+func GetItemDetails(item models.Item) (*amazon.ItemLookupResponse, error) {
+
+	client := getAmazonClient(item.Region)
 
 	<-RateLimit
 
-	return client.ItemLookup(amazon.ItemLookupParameters{
+	resp, err := client.ItemLookup(amazon.ItemLookupParameters{
 		ResponseGroups: []amazon.ItemLookupResponseGroup{
 			amazon.ItemLookupResponseGroupMedium,
 		},
 		IDType:  amazon.IDTypeASIN,
-		ItemIDs: []string{id},
+		ItemIDs: []string{item.ID},
 	}).Do()
+
+	return resp, err
 }
 
-func GetSimilarItems() {
+func GetSimilarItems(item models.Item) (*amazon.SimilarityLookupResponse) {
 
-	client, err := amazon.NewFromEnvionment()
-	if err != nil {
-		log.Fatal(err)
-	}
-	res, err := client.SimilarityLookup(amazon.SimilarityLookupParameters{
+	client := getAmazonClient(item.Region)
+
+	<-RateLimit
+
+	resp, err := client.SimilarityLookup(amazon.SimilarityLookupParameters{
 		ResponseGroups: []amazon.SimilarityLookupResponseGroup{
 			amazon.SimilarityLookupResponseGroupLarge,
 		},
-		ItemIDs: []string{
-			"477418392X",
-		},
+		ItemIDs: []string{item.ID},
 	}).Do()
+
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, item := range res.Items.Item {
-		fmt.Printf(`-------------------------------
-[Title] %v
-[URL]   %v
-`, item.ItemAttributes.Title, item.DetailPageURL)
-	}
+
+	return resp
 }
 
-func GetReviews() {
+func GetReviews(item models.Item) {
 
 }
 
-func TopInNode() {
+func TopInNode(node int) {
 
 }
 
-func GetNodeDetails(){
+func GetNodeDetails(node int) {
 
 	client, err := amazon.NewFromEnvionment()
 	if err != nil {
@@ -80,7 +95,7 @@ func GetNodeDetails(){
 	fmt.Printf("%v: %v\n", browseNode.ID, browseNode.Name)
 }
 
-func Search(){
+func Search(search string) {
 
 	client, err := amazon.NewFromEnvionment()
 	if err != nil {
@@ -101,14 +116,4 @@ func Search(){
 [URL]   %v
 `, item.ItemAttributes.Title, item.DetailPageURL)
 	}
-}
-
-func getAmazonClient() (*amazon.Client) {
-
-	client, err := amazon.NewFromEnvionment()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return client
 }
