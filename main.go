@@ -7,16 +7,16 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strings"
+	"time"
 
+	amaz "github.com/Jleagle/canihave/amazon"
+	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/scraper"
 	"github.com/go-chi/chi"
 	_ "github.com/go-sql-driver/mysql"
-	"reflect"
-	"github.com/Jleagle/canihave/location"
-	amaz "github.com/Jleagle/canihave/amazon"
-	"time"
 )
 
 var regions map[string]string
@@ -35,16 +35,16 @@ func main() {
 	regions = map[string]string{
 		location.US: "United States",
 		location.UK: "United Kingdom",
-		location.DE: "Deutschland",
-		location.FR: "France",
-		location.JP: "Japan",
-		location.CA: "Canada",
-		location.CN: "China",
-		location.IT: "Italia",
-		location.ES: "España",
-		location.IN: "India",
-		location.BR: "Brazil",
-		location.MX: "Mexico",
+		//location.DE: "Deutschland",
+		//location.FR: "France",
+		//location.JP: "Japan",
+		//location.CA: "Canada",
+		//location.CN: "China",
+		//location.IT: "Italia",
+		//location.ES: "España",
+		//location.IN: "India",
+		//location.BR: "Brazil",
+		//location.MX: "Mexico",
 	}
 
 	r := chi.NewRouter()
@@ -52,7 +52,7 @@ func main() {
 	r.Get("/", searchHandler)
 	r.Post("/", searchHandler)
 	r.Get("/info", infoHandler)
-	r.Get("/site-map", siteMapHandler)
+	r.Get("/sitemap.xml", siteMapHandler)
 	r.Get("/categories", categoriesHandler)
 	r.Get("/scrape", scraper.ScrapeHandler)
 	r.Get("/scrape/{id}", scraper.ScrapeHandler)
@@ -104,6 +104,7 @@ func getTemplateFuncMap() map[string]interface{} {
 		},
 		"inc": func(i int) int { return i + 1 },
 		"dec": func(i int) int { return i - 1 },
+		"cmp": func(i string, j string) bool { return i == j },
 	}
 }
 

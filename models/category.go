@@ -1,11 +1,20 @@
 package models
 
 import (
-	"github.com/Jleagle/canihave/store"
 	"fmt"
-	"github.com/Masterminds/squirrel"
 	"strconv"
+
+	"github.com/Jleagle/canihave/store"
+	"github.com/Masterminds/squirrel"
 )
+
+type Category struct {
+	ID   int
+	Name string
+}
+
+//todo, make a struct and add these methods as listeners
+// add a get function that just fills in the restof the struct
 
 func CategoryIDFromName(name string) (id string) {
 

@@ -1,4 +1,4 @@
-{{define "item"}} {{ template "header" }}
+{{define "item"}} {{ template "header" .}}
 
 <div id="fb-root"></div>
 <script>
@@ -59,4 +59,4 @@
     </div>
 </div>
 
-{{ template "footer" }} {{end}}
+{{ template "footer" .}} {{end}}

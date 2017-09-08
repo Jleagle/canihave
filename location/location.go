@@ -1,14 +1,14 @@
 package location
 
 import (
-	"github.com/oschwald/geoip2-golang"
-	"net"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
-	"os"
 	"strings"
+
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
+	"github.com/oschwald/geoip2-golang"
 )
 
 const (

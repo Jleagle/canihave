@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/Jleagle/canihave/bots"
+	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/models"
 	"github.com/go-chi/chi"
 )
@@ -29,12 +31,17 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item.IncrementHits()
+	if !bots.IsBot(r.UserAgent()) {
+		item.IncrementHits()
+	}
 
 	// Return template
 	vars := itemVars{}
 	vars.Item = item
 	vars.Javascript = []string{"//platform.twitter.com/widgets.js"}
+	vars.Flag = location.GetAmazonRegion(w, r)
+	vars.Flags = regions
+	vars.Path = r.URL.Path
 	vars.WebPage = ITEM
 
 	returnTemplate(w, "item", vars)
@@ -45,4 +52,7 @@ type itemVars struct {
 	Item       models.Item
 	Javascript []string
 	WebPage    string
+	Flag       string
+	Flags      map[string]string
+	Path       string
 }

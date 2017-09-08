@@ -1,18 +1,20 @@
 package amazon
 
 import (
-	"github.com/ngs/go-amazon-product-advertising-api/amazon"
-	"log"
-	"time"
 	"fmt"
+	"log"
 	"os"
+	"time"
+
 	"github.com/Jleagle/canihave/location"
-	"github.com/Jleagle/canihave/models"
+	"github.com/ngs/go-amazon-product-advertising-api/amazon"
 )
 
 var RateLimit <-chan time.Time
 
 func getAmazonClient(region string) (client *amazon.Client) {
+
+	<-RateLimit
 
 	client, err := amazon.New(
 		os.Getenv("AWS_ACCESS_KEY_ID"),
@@ -27,34 +29,32 @@ func getAmazonClient(region string) (client *amazon.Client) {
 	return client
 }
 
-func GetItemDetails(item models.Item) (*amazon.ItemLookupResponse, error) {
+func GetItemDetails(id string, region string) (*amazon.ItemLookupResponse, error) {
 
-	client := getAmazonClient(item.Region)
-
-	<-RateLimit
+	client := getAmazonClient(region)
 
 	resp, err := client.ItemLookup(amazon.ItemLookupParameters{
 		ResponseGroups: []amazon.ItemLookupResponseGroup{
 			amazon.ItemLookupResponseGroupMedium,
+			amazon.ItemLookupResponseGroupReviews,
+			amazon.ItemLookupResponseGroupEditorialReview,
 		},
 		IDType:  amazon.IDTypeASIN,
-		ItemIDs: []string{item.ID},
+		ItemIDs: []string{id},
 	}).Do()
 
 	return resp, err
 }
 
-func GetSimilarItems(item models.Item) (*amazon.SimilarityLookupResponse) {
+func GetSimilarItems(id string, region string) *amazon.SimilarityLookupResponse {
 
-	client := getAmazonClient(item.Region)
-
-	<-RateLimit
+	client := getAmazonClient(region)
 
 	resp, err := client.SimilarityLookup(amazon.SimilarityLookupParameters{
 		ResponseGroups: []amazon.SimilarityLookupResponseGroup{
 			amazon.SimilarityLookupResponseGroupLarge,
 		},
-		ItemIDs: []string{item.ID},
+		ItemIDs: []string{id},
 	}).Do()
 
 	if err != nil {
@@ -64,20 +64,10 @@ func GetSimilarItems(item models.Item) (*amazon.SimilarityLookupResponse) {
 	return resp
 }
 
-func GetReviews(item models.Item) {
+func GetNodeDetails(node string, region string) {
 
-}
+	client := getAmazonClient(region)
 
-func TopInNode(node int) {
-
-}
-
-func GetNodeDetails(node int) {
-
-	client, err := amazon.NewFromEnvionment()
-	if err != nil {
-		log.Fatal(err)
-	}
 	res, err := client.BrowseNodeLookup(amazon.BrowseNodeLookupParameters{
 		ResponseGroups: []amazon.BrowseNodeLookupResponseGroup{
 			amazon.BrowseNodeLookupResponseGroupBrowseNodeInfo,
@@ -86,34 +76,32 @@ func GetNodeDetails(node int) {
 			amazon.BrowseNodeLookupResponseGroupTopSellers,
 			amazon.BrowseNodeLookupResponseGroupMostWishedFor,
 		},
-		BrowseNodeID: "492352",
+		BrowseNodeID: node,
 	}).Do()
+
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	browseNode := res.BrowseNodes()[0]
 	fmt.Printf("%v: %v\n", browseNode.ID, browseNode.Name)
 }
 
-func Search(search string) {
+func Search(search string, region string) {
 
-	client, err := amazon.NewFromEnvionment()
-	if err != nil {
-		log.Fatal(err)
-	}
+	client := getAmazonClient(region)
+
 	res, err := client.ItemSearch(amazon.ItemSearchParameters{
-		SearchIndex:    amazon.SearchIndexMusic,
-		ResponseGroups: []amazon.ItemSearchResponseGroup{amazon.ItemSearchResponseGroupLarge},
-		Keywords:       "Pat Metheny",
+		SearchIndex: amazon.SearchIndexAll,
+		ResponseGroups: []amazon.ItemSearchResponseGroup{
+			amazon.ItemSearchResponseGroupLarge,
+		},
+		Keywords: search,
 	}).Do()
+
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	fmt.Printf("%d results found\n\n", res.Items.TotalResults)
-	for _, item := range res.Items.Item {
-		fmt.Printf(`-------------------------------
-[Title] %v
-[URL]   %v
-`, item.ItemAttributes.Title, item.DetailPageURL)
-	}
 }

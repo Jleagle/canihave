@@ -1,10 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/store"
-	"fmt"
 )
 
 func categoriesHandler(w http.ResponseWriter, r *http.Request) {

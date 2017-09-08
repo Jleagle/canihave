@@ -1,9 +1,10 @@
 package social
 
 import (
-	"github.com/Jleagle/canihave/models"
-	"github.com/ChimeraCoder/anaconda"
 	"os"
+
+	"github.com/ChimeraCoder/anaconda"
+	"github.com/Jleagle/canihave/models"
 )
 
 func postToTwitter(item models.Item) {

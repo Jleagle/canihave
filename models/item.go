@@ -3,17 +3,17 @@ package models
 import (
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 	"time"
 
+	amaz "github.com/Jleagle/canihave/amazon"
+	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
+	"github.com/metal3d/go-slugify"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
 	"github.com/patrickmn/go-cache"
-	"github.com/Jleagle/canihave/location"
-	amaz "github.com/Jleagle/canihave/amazon"
-	"strings"
-	"strconv"
-	"github.com/metal3d/go-slugify"
 )
 
 // item is the database row
@@ -107,12 +107,12 @@ func (i *Item) Get() {
 	}
 
 	// Save errors into cache too
-	if strings.Contains(i.Status, "AWS.InvalidParameterValue"){
+	if strings.Contains(i.Status, "AWS.InvalidParameterValue") {
 
 		i.saveAsNewMysqlRow()
 		i.saveToMemcache()
 
-	}else if strings.Contains(i.Status, "RequestThrottled"){
+	} else if strings.Contains(i.Status, "RequestThrottled") {
 
 	}
 }
@@ -120,7 +120,6 @@ func (i *Item) Get() {
 func (i *Item) getFromMemcache() (found bool) {
 
 	return i.getFromMysql() //todo, remove this and fix method
-
 
 	foo, found := store.GetGoCache().Get(i.ID)
 	if found {
@@ -184,11 +183,10 @@ func (i *Item) saveAsNewMysqlRow() {
 
 func (i *Item) getFromAmazon() (found bool) {
 
-	response, err := amaz.GetItemDetails(*i)
+	response, err := amaz.GetItemDetails(i.ID, i.Region)
 
 	if err != nil {
 		i.Status = err.Error()
-		fmt.Printf("%v", err.Error())
 		return false
 	}
 

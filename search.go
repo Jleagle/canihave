@@ -3,14 +3,14 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
-	"math"
 
+	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/models"
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
-	"github.com/Jleagle/canihave/location"
 )
 
 var perPage int = 94
@@ -101,7 +101,7 @@ func getPageLimit(search string, category string, region string) int {
 	return int(math.Ceil(d))
 }
 
-func filter(query squirrel.SelectBuilder, search string, category string, region string) (squirrel.SelectBuilder) {
+func filter(query squirrel.SelectBuilder, search string, category string, region string) squirrel.SelectBuilder {
 
 	//query = query.Where("region = ?", region)
 

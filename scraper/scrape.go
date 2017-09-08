@@ -1,15 +1,15 @@
 package scraper
 
 import (
+	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"regexp"
 
+	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/models"
 	"github.com/go-chi/chi"
-	"fmt"
-	"github.com/Jleagle/canihave/location"
-	"io/ioutil"
-	"log"
 )
 
 const (

@@ -21,7 +21,7 @@ Item Pages
 ==========
 
 - Make item pages
-- google site map
+- submit sitemap to google
 - finish fb graph tags
 - similar items
 - top items in same node

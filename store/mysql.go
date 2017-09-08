@@ -2,9 +2,10 @@ package store
 
 import (
 	"database/sql"
-	"os"
-	"github.com/Masterminds/squirrel"
 	"fmt"
+	"os"
+
+	"github.com/Masterminds/squirrel"
 )
 
 var mysql *sql.DB
@@ -45,7 +46,7 @@ func GetInsertPrep() *sql.Stmt {
 	return mysqlInsertItem
 }
 
-func QueryRows(queryBuilder squirrel.SelectBuilder) (*sql.Rows) {
+func QueryRows(queryBuilder squirrel.SelectBuilder) *sql.Rows {
 
 	rawSQL, args, err := queryBuilder.ToSql()
 	if err != nil {
@@ -63,7 +64,7 @@ func QueryRows(queryBuilder squirrel.SelectBuilder) (*sql.Rows) {
 	return rows
 }
 
-func QueryRow(queryBuilder squirrel.SelectBuilder) (*sql.Row) {
+func QueryRow(queryBuilder squirrel.SelectBuilder) *sql.Row {
 
 	rawSQL, args, err := queryBuilder.ToSql()
 	if err != nil {

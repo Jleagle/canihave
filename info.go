@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+
 	"github.com/Jleagle/canihave/location"
 )
 
