@@ -9,8 +9,8 @@ import (
 )
 
 type Category struct {
-	ID   int
-	Name string
+	ID         int
+	AmazonName string
 }
 
 //todo, make a struct and add these methods as listeners

@@ -46,22 +46,18 @@ func GetItemDetails(id string, region string) (*amazon.ItemLookupResponse, error
 	return resp, err
 }
 
-func GetSimilarItems(id string, region string) *amazon.SimilarityLookupResponse {
+func GetSimilarItems(id string, region string) (resp *amazon.SimilarityLookupResponse, err error) {
 
 	client := getAmazonClient(region)
 
-	resp, err := client.SimilarityLookup(amazon.SimilarityLookupParameters{
+	resp, err = client.SimilarityLookup(amazon.SimilarityLookupParameters{
 		ResponseGroups: []amazon.SimilarityLookupResponseGroup{
 			amazon.SimilarityLookupResponseGroupLarge,
 		},
 		ItemIDs: []string{id},
 	}).Do()
 
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return resp
+	return resp, err
 }
 
 func GetNodeDetails(node string, region string) {
@@ -80,7 +76,7 @@ func GetNodeDetails(node string, region string) {
 	}).Do()
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err) // Remove
 	}
 
 	browseNode := res.BrowseNodes()[0]
@@ -100,7 +96,7 @@ func Search(search string, region string) {
 	}).Do()
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err) // Remove
 	}
 
 	fmt.Printf("%d results found\n\n", res.Items.TotalResults)

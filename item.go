@@ -24,7 +24,8 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	// Get item details
 	item := models.Item{}
 	item.ID = id
-	item.Get()
+	//item.Get()
+	item.GetAll()
 
 	if item.Link == "" {
 		returnTemplate(w, "error", errorVars{HTTPCode: 404, Message: "Can't find item"})
