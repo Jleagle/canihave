@@ -68,14 +68,14 @@ func getResults(search string, category string, region string, page int) []model
 	query := squirrel.Select("*").From("items").OrderBy("region = '" + region + "' DESC, dateCreated DESC").Limit(uint64(perPage)).Offset(offset)
 	query = filter(query, search, category, region)
 
-	rows := store.QueryRows(query)
+	rows := store.Query(query)
 	defer rows.Close()
 
 	// Convert to types
 	results := []models.Item{}
 	item := models.Item{}
 	for rows.Next() {
-		err := rows.Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.Name, &item.Link, &item.Source, &item.SalesRank, &item.Photo, &item.ProductGroup, &item.Price, &item.Region, &item.Hits, &item.Status)
+		err := rows.Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.Name, &item.Link, &item.Source, &item.SalesRank, &item.Photo, &item.ProductGroup, &item.Price, &item.Region, &item.Hits, &item.Status, &item.Type)
 		if err != nil {
 			fmt.Println(err)
 		}

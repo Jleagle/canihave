@@ -26,6 +26,7 @@
     </li>
 </ul>
 
+<h1>Pics</h1>
 <div class="row">
     <div class="col-4">
 
@@ -58,5 +59,32 @@
 
     </div>
 </div>
+
+
+{{if .Similar}}
+<h2>Related Items</h2>
+<div class="row">
+    {{ range .Similar }}
+
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-4">
+        <div class="card">
+            <a href="{{.GetDetailsLink}}">
+                <img class="card-img-top" src="{{.Photo}}" alt="{{ .Name }}">
+            </a>
+            <div class="card-body">
+                <h6 class="card-title">{{ .Name }}</h6>
+                <p class="card-text">Price: {{.GetCurrency}}{{.GetPrice}}</p>
+                <a class="btn btn-primary" href="{{.GetAmazonLink}}" target="_blank">
+                    <img src="/assets/amazon-logo.png" alt="Buy at Amazon" class="buy-at-amazon">Buy!
+                </a>
+                <a class="btn btn-primary" href="{{.GetDetailsLink}}">Info!</a>
+            </div>
+        </div>
+    </div>
+
+    {{ end }}
+</div>
+{{end}}
+
 
 {{ template "footer" .}} {{end}}

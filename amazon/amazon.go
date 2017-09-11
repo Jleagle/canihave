@@ -29,11 +29,11 @@ func getAmazonClient(region string) (client *amazon.Client) {
 	return client
 }
 
-func GetItemDetails(id string, region string) (*amazon.ItemLookupResponse, error) {
+func GetItemDetails(id string, region string) (resp *amazon.ItemLookupResponse, err error) {
 
 	client := getAmazonClient(region)
 
-	resp, err := client.ItemLookup(amazon.ItemLookupParameters{
+	resp, err = client.ItemLookup(amazon.ItemLookupParameters{
 		ResponseGroups: []amazon.ItemLookupResponseGroup{
 			amazon.ItemLookupResponseGroupMedium,
 			amazon.ItemLookupResponseGroupReviews,

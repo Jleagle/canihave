@@ -23,9 +23,10 @@ CREATE TABLE `categories` (
   UNIQUE KEY `amazon` (`amazon_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `relation` (
+CREATE TABLE `relations` (
   `id` varchar(10) NOT NULL DEFAULT '',
   `related_id` varchar(10) NOT NULL DEFAULT '',
   `date_created` datetime NOT NULL,
-  `type` varchar(10) NOT NULL DEFAULT ''
+  `type` varchar(10) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`,`related_id`,`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

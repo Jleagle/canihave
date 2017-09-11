@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -106,8 +105,8 @@ func (i *Item) IncrementHits() (item Item) {
 
 func (i *Item) GetAll() {
 	i.Get()
-	getSimilar(i.ID, i.Region)
-	//getNode()
+	saveSimilar(i.ID, i.Region)
+	//saveNodeItems(i.Node, i.Region)
 }
 
 func (i *Item) Get() {
@@ -154,21 +153,23 @@ func (i *Item) Get() {
 	}
 }
 
-func (i *Item) Save() (result sql.Result) {
-
-	conn := store.GetMysqlConnection()
-	result, err := conn.Exec("UPDATE items SET id = ?, dateCreated = ?, dateUpdated = ?, name = ?, link = ?, source = ?, salesRank = ?, photo = ?, productGroup = ?, price = ?, region = ?, hits = ?, status = ? WHERE id = ?", i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.ProductGroup, i.Price, i.Region, i.Hits, i.Status)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return result
-}
+//func (i *Item) Save() (result sql.Result) {
+//
+//	//builder := squirrel.Update("items").Limit(1)
+//	//builder= builder.Set("id", "dateCreated", "dateUpdated", "name", "link", "source", "salesRank", "photo", "productGroup", "price", "region", "hits", "status", "type")
+//
+//	conn := store.GetMysqlConnection()
+//	result, err := conn.Exec("UPDATE items SET id = ?, dateCreated = ?, dateUpdated = ?, name = ?, link = ?, source = ?, salesRank = ?, photo = ?, productGroup = ?, price = ?, region = ?, hits = ?, status = ? WHERE id = ?", i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.ProductGroup, i.Price, i.Region, i.Hits, i.Status, i.Type)
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//
+//	return result
+//}
 
 func (i *Item) getFromMemcache() (found bool) {
 
-	mc := memcache.New("127.0.0.1:11211")
-	byteArray, err := mc.Get(i.ID)
+	byteArray, err := store.GetMemcacheConnection().Get(i.ID)
 
 	if err == memcache.ErrCacheMiss {
 		return false
@@ -192,14 +193,14 @@ func (i *Item) getFromMemcache() (found bool) {
 	i.Region = item.Region
 	i.Hits = item.Hits
 	i.Status = item.Status
+	i.Type = item.Type
 
 	return true
 }
 
 func (i *Item) saveToMemcache() {
 
-	mc := memcache.New("127.0.0.1:11211")
-	err := mc.Set(&memcache.Item{Key: i.ID, Value: EncodeItem(*i)})
+	err := store.GetMemcacheConnection().Set(&memcache.Item{Key: i.ID, Value: EncodeItem(*i)})
 	if err != nil {
 		panic(err)
 	}
@@ -215,7 +216,7 @@ func (i *Item) getFromMysql() (found bool) {
 	}
 
 	conn := store.GetMysqlConnection()
-	err = conn.QueryRow(s, args...).Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.ProductGroup, &i.Price, &i.Region, &i.Hits, &i.Status)
+	err = conn.QueryRow(s, args...).Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.ProductGroup, &i.Price, &i.Region, &i.Hits, &i.Status, &i.Type)
 	if err != nil {
 		//fmt.Printf("%v", err.Error())
 		return false
@@ -239,7 +240,11 @@ func (i *Item) saveAsNewMysqlRow() {
 	}
 
 	// run query
-	_, err := store.GetInsertPrep().Exec(i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.ProductGroup, i.Price, i.Region, i.Hits, i.Status)
+	builder := squirrel.Insert("items")
+	builder = builder.Columns("id", "dateCreated", "dateUpdated", "name", "link", "source", "salesRank", "photo", "productGroup", "price", "region", "hits", "status", "type")
+	builder = builder.Values(i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.ProductGroup, i.Price, i.Region, i.Hits, i.Status, i.Type)
+
+	_, err := store.Insert(builder)
 
 	if sqlerr, ok := err.(*mysql.MySQLError); ok {
 		if sqlerr.Number == 1062 { // Duplicate entry

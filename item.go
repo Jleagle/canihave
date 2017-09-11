@@ -24,8 +24,8 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	// Get item details
 	item := models.Item{}
 	item.ID = id
-	//item.Get()
-	item.GetAll()
+	item.Get()
+	//item.GetAll()
 
 	if item.Link == "" {
 		returnTemplate(w, "error", errorVars{HTTPCode: 404, Message: "Can't find item"})
@@ -44,6 +44,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Flags = regions
 	vars.Path = r.URL.Path
 	vars.WebPage = ITEM
+	vars.Similar = item.GetSimilar()
 
 	returnTemplate(w, "item", vars)
 	return
@@ -56,4 +57,5 @@ type itemVars struct {
 	Flag       string
 	Flags      map[string]string
 	Path       string
+	Similar    []models.Item
 }

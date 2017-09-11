@@ -35,13 +35,15 @@
 
         <div class="collapse navbar-collapse" id="navbar">
 
-            {{if cmp .WebPage "SEARCH"}}
+            {{if cmp .WebPage "search"}}
             <ul class="navbar-nav">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" data-toggle="dropdown">Sort By</a>
                     <div class="dropdown-menu">
                         <a class="dropdown-item" href="/?sort=date">Date Added</a>
                         <a class="dropdown-item" href="/?sort=hits">Popularity</a>
+                        <a class="dropdown-item" href="/?sort=hits">Sales Rank</a>
+                        <a class="dropdown-item" href="/?sort=hits">Price</a>
                     </div>
                 </li>
             </ul>

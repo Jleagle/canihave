@@ -19,7 +19,7 @@ func siteMapHandler(w http.ResponseWriter, r *http.Request) {
 
 	// todo, cache
 	query := squirrel.Select("*").From("items").OrderBy("dateCreated DESC").Limit(1000)
-	rows := store.QueryRows(query)
+	rows := store.Query(query)
 	defer rows.Close()
 
 	var ID, DateCreated, DateUpdated, Name, Link, Source, SalesRank, Photo, ProductGroup, Price, Region, Hits, Status string

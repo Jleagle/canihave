@@ -9,41 +9,37 @@ import (
 
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/models"
-	"github.com/go-chi/chi"
 )
 
 const (
 	ShitYouCanAfford string = "shityoucanafford"
 	WannaSpend       string = "wannaspend"
 	DatTwenty        string = "dattwenty"
+	Canopy           string = "canopy"
+	FiveStar         string = "fivestar"
+	BoughtItOnce     string = "boughtitonce"
 )
 
-func ScrapeHandler(w http.ResponseWriter, r *http.Request) {
+func ScrapeHandler(social bool) {
 
-	// todo, check env var to stop people hitting this url
-
-	id := chi.URLParam(r, "id")
-	if id != "" {
-
-		item := models.Item{}
-		item.ID = id
-		item.Get()
-
-	} else {
-
-		getSingle("http://shityoucanafford.com/", ShitYouCanAfford)
-		getSingle("http://dattwenty.com/pages/home", DatTwenty)
-		getSingle("http://www.wannaspend.com/", WannaSpend)
-	}
+	getSingle(social, ShitYouCanAfford, "http://shityoucanafford.com/")
+	getSingle(social, DatTwenty, "http://dattwenty.com/pages/home")
+	getSingle(social, WannaSpend, "http://www.wannaspend.com/")
+	getSingle(social, Canopy, "https://canopy.co/ajax/merged_feed_products?limit=100")
+	getSingle(social, FiveStar, "https://fivestar.io/index-3b0dc4e7b4c5c55e5da4.js")
+	getSingle(social, BoughtItOnce, "http://boughtitonce.com/")
 }
 
-func getSingle(url string, source string) {
+func getSingle(social bool, source string, url string) {
 
 	body, code := doCurl(url)
 	if code == 200 {
 
 		r := regexp.MustCompile(`http(.*?)amazon.([a-z]{2,3})/(.*?)/([A-Z0-9]{10})`)
 		links := r.FindAllString(body, -1)
+
+		links = removeDuplicatesUnordered(links)
+		links = arrayReverse(links)
 
 		item := models.Item{}
 		for _, link := range links {
@@ -84,4 +80,27 @@ func doCurl(url string) (body string, code int) {
 	}
 
 	return string(bytes), resp.StatusCode
+}
+
+func removeDuplicatesUnordered(elements []string) []string {
+	encountered := map[string]bool{}
+
+	// Create a map of all unique elements.
+	for v := range elements {
+		encountered[elements[v]] = true
+	}
+
+	// Place all keys from the map into a slice.
+	result := []string{}
+	for key, _ := range encountered {
+		result = append(result, key)
+	}
+	return result
+}
+
+func arrayReverse(s []string) []string {
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
+	}
+	return s
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"html/template"
 	"log"
 	"net/http"
@@ -14,21 +15,24 @@ import (
 
 	amaz "github.com/Jleagle/canihave/amazon"
 	"github.com/Jleagle/canihave/location"
+	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/scraper"
 	"github.com/go-chi/chi"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var regions map[string]string
-
 const (
-	SEARCH     string = "SEARCH"
-	CATEGORIES string = "CATEGORIES"
-	INFO       string = "INFO"
-	ITEM       string = "ITEM"
+	SEARCH     string = "search"
+	CATEGORIES string = "cats"
+	INFO       string = "info"
+	ITEM       string = "item"
 )
 
+var regions map[string]string
+
 func main() {
+
+	logger.Notice()
 
 	amaz.RateLimit = time.Tick(time.Millisecond * 1200)
 
@@ -47,6 +51,14 @@ func main() {
 		//location.MX: "Mexico",
 	}
 
+	scrape := flag.Bool("scrape", false, "Grab new items from websites")
+	social := flag.Bool("social", false, "Add items to social media")
+	flag.Parse()
+	if *scrape {
+		scraper.ScrapeHandler(*social)
+		return
+	}
+
 	r := chi.NewRouter()
 
 	r.Get("/", searchHandler)
@@ -54,8 +66,6 @@ func main() {
 	r.Get("/info", infoHandler)
 	r.Get("/sitemap.xml", siteMapHandler)
 	r.Get("/categories", categoriesHandler)
-	r.Get("/scrape", scraper.ScrapeHandler)
-	r.Get("/scrape/{id}", scraper.ScrapeHandler)
 	r.Get("/{id}", itemHandler)
 	r.Get("/{id}/{slug}", itemHandler)
 
@@ -104,7 +114,7 @@ func getTemplateFuncMap() map[string]interface{} {
 		},
 		"inc": func(i int) int { return i + 1 },
 		"dec": func(i int) int { return i - 1 },
-		"cmp": func(i string, j string) bool { return i == j },
+		"cmp": func(i interface{}, j interface{}) bool { return i == j },
 	}
 }
 
