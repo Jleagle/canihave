@@ -12,6 +12,7 @@ import (
 )
 
 const (
+	MANUAL           string = "manual"
 	ShitYouCanAfford string = "shityoucanafford"
 	WannaSpend       string = "wannaspend"
 	DatTwenty        string = "dattwenty"
@@ -50,7 +51,13 @@ func getSingle(social bool, source string, url string) {
 			item.Region = location.TLDToRegion(m[2])
 			item.ID = m[4]
 			item.Source = source
-			item.Get()
+			item.Type = models.TYPE_SCRAPE
+			item.GetWithExtras()
+
+			if item.Region == "" {
+				fmt.Printf("%v", m)
+				panic("up")
+			}
 		}
 
 	} else {

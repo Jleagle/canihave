@@ -11,11 +11,9 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
-	"time"
 
 	amaz "github.com/Jleagle/canihave/amazon"
 	"github.com/Jleagle/canihave/location"
-	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/scraper"
 	"github.com/go-chi/chi"
 	_ "github.com/go-sql-driver/mysql"
@@ -28,28 +26,12 @@ const (
 	ITEM       string = "item"
 )
 
-var regions map[string]string
-
 func main() {
 
-	logger.Notice()
+	//logger.Notice()
 
-	amaz.RateLimit = time.Tick(time.Millisecond * 1200)
-
-	regions = map[string]string{
-		location.US: "United States",
-		location.UK: "United Kingdom",
-		//location.DE: "Deutschland",
-		//location.FR: "France",
-		//location.JP: "Japan",
-		//location.CA: "Canada",
-		//location.CN: "China",
-		//location.IT: "Italia",
-		//location.ES: "España",
-		//location.IN: "India",
-		//location.BR: "Brazil",
-		//location.MX: "Mexico",
-	}
+	location.SetRegions()
+	amaz.SetRateLimit()
 
 	scrape := flag.Bool("scrape", false, "Grab new items from websites")
 	social := flag.Bool("social", false, "Add items to social media")
@@ -114,7 +96,7 @@ func getTemplateFuncMap() map[string]interface{} {
 		},
 		"inc": func(i int) int { return i + 1 },
 		"dec": func(i int) int { return i - 1 },
-		"cmp": func(i interface{}, j interface{}) bool { return i == j },
+		"cmp": func(i string, j string) bool { return i == j },
 	}
 }
 

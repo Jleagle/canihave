@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Jleagle/canihave/models"
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
 	"github.com/ikeikeikeike/go-sitemap-generator/stm"
@@ -17,24 +18,31 @@ func siteMapHandler(w http.ResponseWriter, r *http.Request) {
 	sm.SetCompress(true)
 	sm.Create()
 
-	// todo, cache
 	query := squirrel.Select("*").From("items").OrderBy("dateCreated DESC").Limit(1000)
 	rows := store.Query(query)
-	defer rows.Close()
 
-	var ID, DateCreated, DateUpdated, Name, Link, Source, SalesRank, Photo, ProductGroup, Price, Region, Hits, Status string
+	i := models.Item{}
 	for rows.Next() {
-		err := rows.Scan(&ID, &DateCreated, &DateUpdated, &Name, &Link, &Source, &SalesRank, &Photo, &ProductGroup, &Price, &Region, &Hits, &Status)
+		err := rows.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Status, &i.Type, &i.CompanyName)
 		if err != nil {
 			fmt.Println(err)
 		}
 
 		sm.Add(stm.URL{
-			"loc":        "/" + ID + "/" + slugify.Marshal(Name, true),
+			"loc":        "/" + i.ID + "/" + slugify.Marshal(i.Name, true),
 			"changefreq": "daily",
 			"mobile":     true,
-			//"title":            Name,
-			//"publication_date": DateCreated,
+			"news": stm.URL{
+				"publication": stm.URL{
+					"name":     "Canihave.one/",
+					"language": i.Region,
+				},
+				"title":            i.Name,
+				"publication_date": i.DateCreated,
+				//"access":           "Subscription",
+				//"genres":           "PressRelease",
+				//"keywords":         "my article, articles about myself",
+			},
 		})
 	}
 

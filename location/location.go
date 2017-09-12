@@ -26,6 +26,30 @@ const (
 	US string = "US"
 )
 
+var regions map[string]string
+
+func SetRegions() {
+
+	regions = map[string]string{
+		US: "United States",
+		UK: "United Kingdom",
+		//location.DE: "Deutschland",
+		//location.FR: "France",
+		//location.JP: "Japan",
+		//location.CA: "Canada",
+		//location.CN: "China",
+		//location.IT: "Italia",
+		//location.ES: "España",
+		//location.IN: "India",
+		//location.BR: "Brazil",
+		//location.MX: "Mexico",
+	}
+}
+
+func GetRegions() map[string]string {
+	return regions
+}
+
 func IsValidRegion(region string) (result bool) {
 	reg := amazon.Region(region)
 	return reg.IsValid()
@@ -34,11 +58,11 @@ func IsValidRegion(region string) (result bool) {
 func getISO(r *http.Request) string {
 
 	// Connect to database
-	db, err := geoip2.Open("location/GeoLite2-Country.mmdb")
+	file, err := geoip2.Open("location/GeoLite2-Country.mmdb")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer file.Close()
 
 	// If you are using strings that may be invalid, check that header is not nil
 	header := r.Header.Get("x-forwarded-for")
@@ -47,7 +71,7 @@ func getISO(r *http.Request) string {
 	}
 	ip := net.ParseIP(header)
 
-	record, err := db.Country(ip)
+	record, err := file.Country(ip)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -119,11 +143,9 @@ func GetAmazonTag(region string) (tag string) {
 		return ""
 	case UK:
 		return "canihaveone00-21"
-	case US:
-		return "canihaveone-20"
 	}
 
-	return ""
+	return "canihaveone-20"
 }
 
 func TLDToRegion(tld string) string {

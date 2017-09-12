@@ -26,7 +26,9 @@ func CategoryIDFromName(name string) (id string) {
 	}
 
 	// Run the query
-	err = store.GetMysqlConnection().QueryRow(sql, args...).Scan(&id)
+	conn := store.GetMysqlConnection()
+
+	err = conn.QueryRow(sql, args...).Scan(&id)
 	if err != nil {
 		fmt.Printf("%v", err.Error())
 	}
@@ -44,7 +46,9 @@ func CategoryNameFromID(id string) (name string) {
 	}
 
 	// Run the query
-	err = store.GetMysqlConnection().QueryRow(sql, args...).Scan(&name)
+	conn := store.GetMysqlConnection()
+
+	err = conn.QueryRow(sql, args...).Scan(&name)
 	if err != nil {
 		fmt.Printf("%v", err.Error())
 	}

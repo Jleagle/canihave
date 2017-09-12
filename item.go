@@ -24,8 +24,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	// Get item details
 	item := models.Item{}
 	item.ID = id
-	item.Get()
-	//item.GetAll()
+	item.GetWithExtras()
 
 	if item.Link == "" {
 		returnTemplate(w, "error", errorVars{HTTPCode: 404, Message: "Can't find item"})
@@ -41,7 +40,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Item = item
 	vars.Javascript = []string{"//platform.twitter.com/widgets.js"}
 	vars.Flag = location.GetAmazonRegion(w, r)
-	vars.Flags = regions
+	vars.Flags = location.GetRegions()
 	vars.Path = r.URL.Path
 	vars.WebPage = ITEM
 	vars.Similar = item.GetSimilar()

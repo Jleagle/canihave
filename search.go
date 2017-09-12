@@ -52,7 +52,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Search64 = base64.StdEncoding.EncodeToString([]byte(search))
 	vars.Javascript = []string{"//platform.twitter.com/widgets.js"}
 	vars.Flag = region
-	vars.Flags = regions
+	vars.Flags = location.GetRegions()
 	vars.Page = pageInt
 	vars.PageLimit = pageLimit
 	vars.Path = r.URL.Path
@@ -69,18 +69,17 @@ func getResults(search string, category string, region string, page int) []model
 	query = filter(query, search, category, region)
 
 	rows := store.Query(query)
-	defer rows.Close()
 
 	// Convert to types
 	results := []models.Item{}
-	item := models.Item{}
+	i := models.Item{}
 	for rows.Next() {
-		err := rows.Scan(&item.ID, &item.DateCreated, &item.DateUpdated, &item.Name, &item.Link, &item.Source, &item.SalesRank, &item.Photo, &item.ProductGroup, &item.Price, &item.Region, &item.Hits, &item.Status, &item.Type)
+		err := rows.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Status, &i.Type, &i.CompanyName)
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		results = append(results, item)
+		results = append(results, i)
 	}
 
 	return results
@@ -103,7 +102,7 @@ func getPageLimit(search string, category string, region string) int {
 
 func filter(query squirrel.SelectBuilder, search string, category string, region string) squirrel.SelectBuilder {
 
-	//query = query.Where("region = ?", region)
+	query = query.Where("type = ?", "scrape")
 
 	if search != "" {
 		query = query.Where("name LIKE ?", "%"+search+"%")

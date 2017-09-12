@@ -26,22 +26,24 @@ const (
 	TYPE_INCORRECT string = "incorrect"
 )
 
-// item is the database row
 type Item struct {
-	ID           string
-	DateCreated  string
-	DateUpdated  string
-	Name         string
-	Link         string
-	Source       string
-	SalesRank    int
-	Photo        string
-	ProductGroup string
-	Price        string
-	Region       string
-	Hits         int
-	Status       string
-	Type         string
+	ID          string
+	DateCreated int
+	DateUpdated int
+	DateScanned int
+	Name        string
+	Link        string
+	Source      string
+	SalesRank   int
+	Photo       string
+	Node        string
+	NodeName    string
+	Price       int
+	Region      string
+	Hits        int
+	Status      string
+	Type        string
+	CompanyName string
 }
 
 func (i *Item) GetAmazonLink() string {
@@ -57,11 +59,7 @@ func (i *Item) GetDetailsLink() string {
 }
 
 func (i *Item) GetPrice() float32 {
-	x, err := strconv.Atoi(i.Price)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return float32(x) / 100
+	return float32(i.Price) / 100
 }
 
 func (i *Item) GetCurrency() string {
@@ -72,27 +70,10 @@ func (i *Item) GetFlag() string {
 	return "/assets/flags/" + i.Region + ".gif"
 }
 
-func (i *Item) Reset() {
-
-	//i.ID = ""
-	i.DateCreated = ""
-	i.DateUpdated = ""
-	i.Name = ""
-	i.Link = ""
-	//i.Source = ""
-	i.SalesRank = 0
-	i.Photo = ""
-	i.ProductGroup = ""
-	i.Price = ""
-	i.Region = ""
-	i.Hits = 0
-	//i.Status = ""
-	i.Type = ""
-}
-
 func (i *Item) IncrementHits() (item Item) {
 
 	conn := store.GetMysqlConnection()
+
 	_, err := conn.Exec("UPDATE items SET hits = hits + 1 WHERE id = ?", i.ID)
 	if err != nil {
 		fmt.Println(err)
@@ -103,10 +84,15 @@ func (i *Item) IncrementHits() (item Item) {
 	return item
 }
 
-func (i *Item) GetAll() {
+func (i *Item) GetWithExtras() {
+
 	i.Get()
-	saveSimilar(i.ID, i.Region)
-	//saveNodeItems(i.Node, i.Region)
+
+	if i.Status == "" && i.Region != "" && i.DateScanned == 0 {
+		findSimilar(i.ID, i.Region)
+		//saveNodeItems(i.Node, i.Region)
+	}
+
 }
 
 func (i *Item) Get() {
@@ -135,37 +121,41 @@ func (i *Item) Get() {
 	// Get from Amazon
 	if i.getFromAmazon() {
 		fmt.Println("Retrieving " + i.ID + " from Amazon")
-		i.saveAsNewMysqlRow()
+		i.saveToMysql()
 		i.saveToMemcache()
 		return
 	}
 
-	// Save errors into cache too
+	// Clear the data so it doesnt remember any items from before
+	// todo, do we need this?
+	i.DateCreated = 0
+	i.DateUpdated = 0
+	i.DateScanned = 0
+	i.Name = ""
+	i.Link = ""
+	i.Source = ""
+	i.SalesRank = 0
+	i.Photo = ""
+	i.Node = ""
+	i.NodeName = ""
+	i.Price = 0
+	i.CompanyName = ""
+
+	// Save invalid IDs so we dont query Amazon for them again
 	if strings.Contains(i.Status, "AWS.InvalidParameterValue") {
 
-		i.Reset()
-		i.saveAsNewMysqlRow()
+		i.saveToMysql()
 		i.saveToMemcache()
+		return
+	}
 
-	} else if strings.Contains(i.Status, "RequestThrottled") {
+	// Try again
+	if strings.Contains(i.Status, "RequestThrottled") {
 
 		i.Get()
+		return
 	}
 }
-
-//func (i *Item) Save() (result sql.Result) {
-//
-//	//builder := squirrel.Update("items").Limit(1)
-//	//builder= builder.Set("id", "dateCreated", "dateUpdated", "name", "link", "source", "salesRank", "photo", "productGroup", "price", "region", "hits", "status", "type")
-//
-//	conn := store.GetMysqlConnection()
-//	result, err := conn.Exec("UPDATE items SET id = ?, dateCreated = ?, dateUpdated = ?, name = ?, link = ?, source = ?, salesRank = ?, photo = ?, productGroup = ?, price = ?, region = ?, hits = ?, status = ? WHERE id = ?", i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.ProductGroup, i.Price, i.Region, i.Hits, i.Status, i.Type)
-//	if err != nil {
-//		fmt.Println(err)
-//	}
-//
-//	return result
-//}
 
 func (i *Item) getFromMemcache() (found bool) {
 
@@ -183,17 +173,20 @@ func (i *Item) getFromMemcache() (found bool) {
 
 	i.DateCreated = item.DateCreated
 	i.DateUpdated = item.DateUpdated
+	i.DateScanned = item.DateScanned
 	i.Name = item.Name
 	i.Link = item.Link
 	i.Source = item.Source
 	i.SalesRank = item.SalesRank
 	i.Photo = item.Photo
-	i.ProductGroup = item.ProductGroup
+	i.Node = item.Node
+	i.NodeName = item.NodeName
 	i.Price = item.Price
 	i.Region = item.Region
 	i.Hits = item.Hits
 	i.Status = item.Status
 	i.Type = item.Type
+	i.CompanyName = item.CompanyName
 
 	return true
 }
@@ -209,14 +202,10 @@ func (i *Item) saveToMemcache() {
 func (i *Item) getFromMysql() (found bool) {
 
 	// Make the query
-	query := squirrel.Select("*").From("items").Where(squirrel.Eq{"id": i.ID}).Limit(1)
-	s, args, err := query.ToSql()
-	if err != nil {
-		fmt.Println(err)
-	}
+	builder := squirrel.Select("*").From("items").Where(squirrel.Eq{"id": i.ID}).Limit(1)
 
-	conn := store.GetMysqlConnection()
-	err = conn.QueryRow(s, args...).Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.ProductGroup, &i.Price, &i.Region, &i.Hits, &i.Status, &i.Type)
+	row := store.QueryRow(builder)
+	err := row.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Status, &i.Type, &i.CompanyName)
 	if err != nil {
 		//fmt.Printf("%v", err.Error())
 		return false
@@ -225,29 +214,32 @@ func (i *Item) getFromMysql() (found bool) {
 	return true
 }
 
-func (i *Item) saveAsNewMysqlRow() {
+func (i *Item) saveToMysql() {
 
-	if i.Price == "" {
-		i.Price = "0"
-	}
-
-	date := time.Now().Format("2006-01-02 15:04:05")
-	if i.DateCreated == "" {
+	// todo, check this works
+	date := int(time.Now().Unix())
+	if i.DateCreated == 0 {
 		i.DateCreated = date
 	}
-	if i.DateUpdated == "" {
+	if i.DateUpdated == 0 {
 		i.DateUpdated = date
 	}
 
-	// run query
+	if i.Region == "" {
+		panic("no region")
+	}
+
 	builder := squirrel.Insert("items")
-	builder = builder.Columns("id", "dateCreated", "dateUpdated", "name", "link", "source", "salesRank", "photo", "productGroup", "price", "region", "hits", "status", "type")
-	builder = builder.Values(i.ID, i.DateCreated, i.DateUpdated, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.ProductGroup, i.Price, i.Region, i.Hits, i.Status, i.Type)
+	builder = builder.Columns("id", "dateCreated", "dateUpdated", "dateScanned", "name", "link", "source", "salesRank", "photo", "node", "nodeName", "price", "region", "hits", "status", "type", "companyName")
+	builder = builder.Values(i.ID, i.DateCreated, i.DateUpdated, i.DateScanned, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.Node, i.NodeName, i.Price, i.Region, i.Hits, i.Status, i.Type, i.CompanyName)
 
 	_, err := store.Insert(builder)
 
 	if sqlerr, ok := err.(*mysql.MySQLError); ok {
 		if sqlerr.Number == 1062 { // Duplicate entry
+			return
+		}
+		if sqlerr.Number == 1040 { // Too many connections
 			return
 		}
 	}
@@ -275,8 +267,16 @@ func (i *Item) getFromAmazon() (found bool) {
 	}
 
 	// Make struct
-	amazonItemToItem(i, amazonItem)
-	i.Type = TYPE_SCRAPE
+	price, _ := strconv.Atoi(amazonItem.ItemAttributes.ListPrice.Amount)
+
+	i.Name = amazonItem.ItemAttributes.Title
+	i.Link = amazonItem.DetailPageURL
+	i.SalesRank = amazonItem.SalesRank
+	i.Photo = amazonItem.LargeImage.URL
+	i.Node = "0" //todo
+	i.NodeName = amazonItem.ItemAttributes.ProductGroup
+	i.Price = price
+	i.CompanyName = "" //todo
 
 	return true
 }
@@ -300,16 +300,4 @@ func EncodeItem(item Item) []byte {
 func interfaceToItem(tst interface{}) (ret Item) {
 	ret, _ = tst.(Item)
 	return ret
-}
-
-func amazonItemToItem(item *Item, amazonItem amazon.Item) {
-
-	item.Name = amazonItem.ItemAttributes.Title
-	item.Link = amazonItem.DetailPageURL
-	item.SalesRank = amazonItem.SalesRank
-	item.Photo = amazonItem.LargeImage.URL
-	item.ProductGroup = amazonItem.ItemAttributes.ProductGroup
-	item.Price = amazonItem.ItemAttributes.ListPrice.Amount
-	item.Hits = 0
-	item.Status = ""
 }

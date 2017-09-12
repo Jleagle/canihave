@@ -12,6 +12,11 @@ import (
 
 var RateLimit <-chan time.Time
 
+func SetRateLimit() {
+
+	RateLimit = time.Tick(time.Millisecond * 1000) // Amazon has 1 request per second limit
+}
+
 func getAmazonClient(region string) (client *amazon.Client) {
 
 	<-RateLimit

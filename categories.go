@@ -6,18 +6,15 @@ import (
 
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/store"
+	"github.com/Masterminds/squirrel"
 )
 
 func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 
 	location.DetectLanguageChange(w, r)
 
-	conn := store.GetMysqlConnection()
-	rows, err := conn.Query("SELECT productGroup AS category, count(productGroup) AS `count` FROM items GROUP BY productGroup ORDER BY count DESC")
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer rows.Close()
+	builder := squirrel.Select("nodeName AS category, count(nodeName) AS count").From("items").GroupBy("nodeName").OrderBy("count DESC")
+	rows := store.Query(builder)
 
 	results := []category{}
 	item := category{}
@@ -32,7 +29,7 @@ func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := categoriesVars{}
 	vars.Flag = location.GetAmazonRegion(w, r)
-	vars.Flags = regions
+	vars.Flags = location.GetRegions()
 	vars.Items = results
 	vars.Path = r.URL.Path
 	vars.WebPage = CATEGORIES

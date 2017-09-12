@@ -13,7 +13,7 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 	vars := infoVars{}
 	vars.Javascript = []string{"//platform.twitter.com/widgets.js"}
 	vars.Flag = location.GetAmazonRegion(w, r)
-	vars.Flags = regions
+	vars.Flags = location.GetRegions()
 	vars.Path = r.URL.Path
 	vars.WebPage = INFO
 

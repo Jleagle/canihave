@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -24,7 +25,7 @@ const (
 	RELATION_TYPE_SAME_NODE string = "node"
 )
 
-func saveSimilar(id string, region string) {
+func findSimilar(id string, region string) {
 
 	similar, err := amaz.GetSimilarItems(id, region)
 
@@ -37,20 +38,30 @@ func saveSimilar(id string, region string) {
 	for _, amazonItem := range similar.Items.Item {
 
 		// Save item
-		item := Item{}
-		item.ID = amazonItem.ASIN
-		amazonItemToItem(&item, amazonItem)
-		item.Type = TYPE_SIMILAR
+		price, _ := strconv.Atoi(amazonItem.ItemAttributes.ListPrice.Amount)
 
-		item.saveAsNewMysqlRow()
+		item := Item{}
+
+		item.ID = amazonItem.ASIN
+		item.Name = amazonItem.ItemAttributes.Title
+		item.Link = amazonItem.DetailPageURL
+		item.SalesRank = amazonItem.SalesRank
+		item.Photo = amazonItem.LargeImage.URL
+		item.Node = "0" //todo
+		item.NodeName = amazonItem.ItemAttributes.ProductGroup
+		item.Price = price
+		item.CompanyName = "" //todo
+		item.Status = ""
+		item.Type = TYPE_SIMILAR
+		item.Region = region
+
+		item.saveToMysql()
 		item.saveToMemcache()
 
 		// Save the relation
-		date := time.Now().Format("2006-01-02 15:04:05")
-
 		builder := squirrel.Insert("relations")
-		builder = builder.Columns("id", "related_id", "date_created", "type")
-		builder = builder.Values(id, item.ID, date, RELATION_TYPE_SIMILAR)
+		builder = builder.Columns("id", "relatedId", "dateCreated", "type")
+		builder = builder.Values(id, item.ID, time.Now().Unix(), RELATION_TYPE_SIMILAR)
 
 		_, err := store.Insert(builder)
 
@@ -69,7 +80,7 @@ func saveSimilar(id string, region string) {
 func (i Item) GetSimilar() (items []Item) {
 
 	// Get relations
-	builder := squirrel.Select("related_id").From("relations").Where("id = ? AND type = ?", i.ID, RELATION_TYPE_SIMILAR)
+	builder := squirrel.Select("relatedId").From("relations").Where("id = ? AND type = ?", i.ID, RELATION_TYPE_SIMILAR)
 	rows := store.Query(builder)
 
 	relation := Relation{}
