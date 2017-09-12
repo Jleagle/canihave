@@ -29,7 +29,7 @@ CREATE TABLE `items` (
 CREATE TABLE `relations` (
   `id` varchar(10) NOT NULL DEFAULT '',
   `relatedId` varchar(10) NOT NULL DEFAULT '',
-  `dateCreated` datetime NOT NULL,
+  `dateCreated` int(10) NOT NULL,
   `type` varchar(10) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`,`relatedId`,`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
