@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/Jleagle/canihave/models"
 	"github.com/Jleagle/canihave/store"
@@ -20,6 +21,7 @@ func siteMapHandler(w http.ResponseWriter, r *http.Request) {
 
 	query := squirrel.Select("*").From("items").OrderBy("dateCreated DESC").Limit(1000)
 	rows := store.Query(query)
+	defer rows.Close()
 
 	i := models.Item{}
 	for rows.Next() {
@@ -38,10 +40,8 @@ func siteMapHandler(w http.ResponseWriter, r *http.Request) {
 					"language": i.Region,
 				},
 				"title":            i.Name,
-				"publication_date": i.DateCreated,
-				//"access":           "Subscription",
-				//"genres":           "PressRelease",
-				//"keywords":         "my article, articles about myself",
+				"publication_date": time.Unix(int64(i.DateCreated), 0).Format("2006-01-02 15:04:05"),
+				"genres":           i.NodeName,
 			},
 		})
 	}

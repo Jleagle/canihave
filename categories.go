@@ -13,8 +13,9 @@ func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 
 	location.DetectLanguageChange(w, r)
 
-	builder := squirrel.Select("nodeName AS category, count(nodeName) AS count").From("items").GroupBy("nodeName").OrderBy("count DESC")
+	builder := squirrel.Select("nodeName AS category, count(nodeName) AS count").From("items").GroupBy("nodeName").OrderBy("count DESC").Where("type = ?", "scrape")
 	rows := store.Query(builder)
+	defer rows.Close()
 
 	results := []category{}
 	item := category{}

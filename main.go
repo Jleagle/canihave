@@ -41,6 +41,8 @@ func main() {
 		return
 	}
 
+	//scraper.ScrapeHandler(*social)
+
 	r := chi.NewRouter()
 
 	r.Get("/", searchHandler)
@@ -96,7 +98,7 @@ func getTemplateFuncMap() map[string]interface{} {
 		},
 		"inc": func(i int) int { return i + 1 },
 		"dec": func(i int) int { return i - 1 },
-		"cmp": func(i string, j string) bool { return i == j },
+		"cmp": func(i interface{}, j interface{}) bool { return i == j },
 	}
 }
 

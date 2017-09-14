@@ -20,11 +20,6 @@ type Relation struct {
 	Type        string
 }
 
-const (
-	RELATION_TYPE_SIMILAR   string = "similar"
-	RELATION_TYPE_SAME_NODE string = "node"
-)
-
 func findSimilar(id string, region string) {
 
 	similar, err := amaz.GetSimilarItems(id, region)
@@ -38,10 +33,15 @@ func findSimilar(id string, region string) {
 	for _, amazonItem := range similar.Items.Item {
 
 		// Save item
-		price, _ := strconv.Atoi(amazonItem.ItemAttributes.ListPrice.Amount)
+		var price int = 0
+		if amazonItem.ItemAttributes.ListPrice.Amount != "" {
+			price, err = strconv.Atoi(amazonItem.ItemAttributes.ListPrice.Amount)
+			if err != nil {
+				log.Fatal("Error converting string to int")
+			}
+		}
 
 		item := Item{}
-
 		item.ID = amazonItem.ASIN
 		item.Name = amazonItem.ItemAttributes.Title
 		item.Link = amazonItem.DetailPageURL
@@ -50,8 +50,7 @@ func findSimilar(id string, region string) {
 		item.Node = "0" //todo
 		item.NodeName = amazonItem.ItemAttributes.ProductGroup
 		item.Price = price
-		item.CompanyName = "" //todo
-		item.Status = ""
+		item.CompanyName = amazonItem.ItemAttributes.Manufacturer
 		item.Type = TYPE_SIMILAR
 		item.Region = region
 
@@ -61,9 +60,10 @@ func findSimilar(id string, region string) {
 		// Save the relation
 		builder := squirrel.Insert("relations")
 		builder = builder.Columns("id", "relatedId", "dateCreated", "type")
-		builder = builder.Values(id, item.ID, time.Now().Unix(), RELATION_TYPE_SIMILAR)
+		builder = builder.Values(id, item.ID, time.Now().Unix(), TYPE_SIMILAR)
 
-		_, err := store.Insert(builder)
+		rows, err := store.Insert(builder)
+		defer rows.Close()
 
 		if sqlerr, ok := err.(*mysql.MySQLError); ok {
 			if sqlerr.Number == 1062 { // Duplicate entry
@@ -77,11 +77,17 @@ func findSimilar(id string, region string) {
 	}
 }
 
+func findNodeitems(node string, region string) {
+
+	//nodeItems, err := amaz.GetNodeDetails(node, region)
+}
+
 func (i Item) GetSimilar() (items []Item) {
 
 	// Get relations
-	builder := squirrel.Select("relatedId").From("relations").Where("id = ? AND type = ?", i.ID, RELATION_TYPE_SIMILAR)
+	builder := squirrel.Select("relatedId").From("relations").Where("id = ? AND type = ?", i.ID, TYPE_SIMILAR)
 	rows := store.Query(builder)
+	defer rows.Close()
 
 	relation := Relation{}
 	relations := []Relation{}

@@ -58,7 +58,6 @@ func getPrepareStatement(query string) (statement *sql.Stmt) {
 	}
 
 	conn := GetMysqlConnection()
-	//defer conn.Close()
 
 	var err error
 	statement, err = conn.Prepare(query)
@@ -79,11 +78,8 @@ func Insert(builder squirrel.InsertBuilder) (rows *sql.Rows, err error) {
 
 	//fmt.Println(rawSQL)
 
-	// Prepare
 	prep := getPrepareStatement(rawSQL)
-	//defer prep.Close()
 
-	// Run SQL
 	rows, err = prep.Query(args...)
 
 	return rows, err
@@ -98,16 +94,12 @@ func Query(builder squirrel.SelectBuilder) (rows *sql.Rows) {
 
 	//fmt.Println(rawSQL)
 
-	// Prepare
 	prep := getPrepareStatement(rawSQL)
-	//defer prep.Close()
 
-	// Run SQL
 	rows, err = prep.Query(args...)
 	if err != nil {
 		fmt.Println(err)
 	}
-	//defer rows.Close()
 
 	return rows
 }
@@ -121,9 +113,7 @@ func QueryRow(builder squirrel.SelectBuilder) *sql.Row {
 
 	//fmt.Println(rawSQL)
 
-	// Prepare
 	prep := getPrepareStatement(rawSQL)
-	//defer prep.Close()
 
 	return prep.QueryRow(args...)
 }

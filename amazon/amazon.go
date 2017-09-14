@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/Jleagle/canihave/location"
@@ -11,6 +12,8 @@ import (
 )
 
 var RateLimit <-chan time.Time
+
+var retries int = 0
 
 func SetRateLimit() {
 
@@ -48,6 +51,11 @@ func GetItemDetails(id string, region string) (resp *amazon.ItemLookupResponse, 
 		ItemIDs: []string{id},
 	}).Do()
 
+	if err != nil && strings.Contains(err.Error(), "RequestThrottled") {
+
+		return GetItemDetails(id, region)
+	}
+
 	return resp, err
 }
 
@@ -61,6 +69,11 @@ func GetSimilarItems(id string, region string) (resp *amazon.SimilarityLookupRes
 		},
 		ItemIDs: []string{id},
 	}).Do()
+
+	if err != nil && strings.Contains(err.Error(), "RequestThrottled") {
+
+		return GetSimilarItems(id, region)
+	}
 
 	return resp, err
 }

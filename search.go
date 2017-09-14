@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
+	"log"
 	"math"
 	"net/http"
 	"strconv"
@@ -33,7 +34,10 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	if page == "" {
 		page = "1"
 	}
-	pageInt, _ := strconv.Atoi(page)
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		log.Fatal("Error converting string to int")
+	}
 
 	if pageInt < 1 {
 		pageInt = 1
@@ -65,10 +69,11 @@ func getResults(search string, category string, region string, page int) []model
 
 	offset := uint64((page - 1) * perPage)
 
-	query := squirrel.Select("*").From("items").OrderBy("region = '" + region + "' DESC, dateCreated DESC").Limit(uint64(perPage)).Offset(offset)
+	query := squirrel.Select("*").From("items").OrderBy("region = '" + region + "' DESC, dateUpdated DESC").Limit(uint64(perPage)).Offset(offset)
 	query = filter(query, search, category, region)
 
 	rows := store.Query(query)
+	defer rows.Close()
 
 	// Convert to types
 	results := []models.Item{}

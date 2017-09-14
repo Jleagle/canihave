@@ -12,10 +12,10 @@ import (
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
+	"github.com/VividCortex/mysqlerr"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-sql-driver/mysql"
 	"github.com/metal3d/go-slugify"
-	"github.com/ngs/go-amazon-product-advertising-api/amazon"
 )
 
 const (
@@ -28,9 +28,9 @@ const (
 
 type Item struct {
 	ID          string
-	DateCreated int
-	DateUpdated int
-	DateScanned int
+	DateCreated int64
+	DateUpdated int64
+	DateScanned int64
 	Name        string
 	Link        string
 	Source      string
@@ -90,7 +90,7 @@ func (i *Item) GetWithExtras() {
 
 	if i.Status == "" && i.Region != "" && i.DateScanned == 0 {
 		findSimilar(i.ID, i.Region)
-		//saveNodeItems(i.Node, i.Region)
+		findNodeitems(i.Node, i.Region)
 	}
 
 }
@@ -207,7 +207,11 @@ func (i *Item) getFromMysql() (found bool) {
 	row := store.QueryRow(builder)
 	err := row.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Status, &i.Type, &i.CompanyName)
 	if err != nil {
-		//fmt.Printf("%v", err.Error())
+		if err.Error() == "sql: no rows in result set" {
+			// No problem
+		} else {
+			fmt.Println("#1 " + err.Error())
+		}
 		return false
 	}
 
@@ -217,7 +221,7 @@ func (i *Item) getFromMysql() (found bool) {
 func (i *Item) saveToMysql() {
 
 	// todo, check this works
-	date := int(time.Now().Unix())
+	date := time.Now().Unix()
 	if i.DateCreated == 0 {
 		i.DateCreated = date
 	}
@@ -234,18 +238,19 @@ func (i *Item) saveToMysql() {
 	builder = builder.Values(i.ID, i.DateCreated, i.DateUpdated, i.DateScanned, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.Node, i.NodeName, i.Price, i.Region, i.Hits, i.Status, i.Type, i.CompanyName)
 
 	_, err := store.Insert(builder)
+	//defer rows.Close()
 
 	if sqlerr, ok := err.(*mysql.MySQLError); ok {
-		if sqlerr.Number == 1062 { // Duplicate entry
+		if sqlerr.Number == mysqlerr.ER_DUP_ENTRY { // Duplicate entry
 			return
 		}
-		if sqlerr.Number == 1040 { // Too many connections
+		if sqlerr.Number == mysqlerr.ER_CON_COUNT_ERROR { // Too many connections
 			return
 		}
 	}
 
 	if err != nil {
-		panic(err.Error())
+		fmt.Println("Trying to add item to Mysql: " + err.Error())
 	}
 }
 
@@ -253,32 +258,34 @@ func (i *Item) getFromAmazon() (found bool) {
 
 	response, err := amaz.GetItemDetails(i.ID, i.Region)
 
-	if err != nil {
+	if len(response.Items.Item) > 0 && err == nil {
+
+		amazonItem := response.Items.Item[0]
+
+		// Price
+		var price int = 0
+		if amazonItem.ItemAttributes.ListPrice.Amount != "" {
+			price, err = strconv.Atoi(amazonItem.ItemAttributes.ListPrice.Amount)
+			if err != nil {
+				log.Fatal("Error converting string to int")
+			}
+		}
+
+		i.Name = amazonItem.ItemAttributes.Title
+		i.Link = amazonItem.DetailPageURL
+		i.SalesRank = amazonItem.SalesRank
+		i.Photo = amazonItem.LargeImage.URL
+		i.Node = "0" //todo
+		i.NodeName = amazonItem.ItemAttributes.ProductGroup
+		i.Price = price
+		i.CompanyName = amazonItem.ItemAttributes.Manufacturer
+
+		return true
+	} else {
+
 		i.Status = err.Error()
 		return false
 	}
-
-	var amazonItem amazon.Item
-	if len(response.Items.Item) > 0 {
-		amazonItem = response.Items.Item[0]
-	} else {
-		i.Status = "Not found in Amazon"
-		return false
-	}
-
-	// Make struct
-	price, _ := strconv.Atoi(amazonItem.ItemAttributes.ListPrice.Amount)
-
-	i.Name = amazonItem.ItemAttributes.Title
-	i.Link = amazonItem.DetailPageURL
-	i.SalesRank = amazonItem.SalesRank
-	i.Photo = amazonItem.LargeImage.URL
-	i.Node = "0" //todo
-	i.NodeName = amazonItem.ItemAttributes.ProductGroup
-	i.Price = price
-	i.CompanyName = "" //todo
-
-	return true
 }
 
 func DecodeItem(raw []byte) (item Item) {

@@ -1,8 +1,3 @@
-BUGS
-====
-
-- Items being saved with no region
-
 TODO
 ====
 
@@ -15,23 +10,11 @@ TODO
 - when scraping, cache a list of all items and check against it so not to do any queries
 - use OneLink - https://affiliate-program.amazon.com/onelink/
 - cache all the queries
-- submit sitemap to google
-
-Item Pages
-==========
-
-- finish fb graph tags
-- top items in same node
-- add reviews
-
-LOW PRIOROTIY
-=============
-
+- return errors from everything and handle them properly
+- append project name to memcache ey
+- Item Pages: finish fb graph tags
+- Item Pages: top items in same node
+- Item Pages: add reviews
 - Post to social networks automatically
 - give priority to main items on sitemap
-
-
-MAYBE
-=====
-
-- add link redirecting to aff links to track stuff, order by this.
+- add max retries for amazon api calls
