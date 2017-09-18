@@ -14,16 +14,17 @@ import (
 
 	amaz "github.com/Jleagle/canihave/amazon"
 	"github.com/Jleagle/canihave/location"
+	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/scraper"
 	"github.com/go-chi/chi"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 const (
-	SEARCH     string = "search"
-	CATEGORIES string = "cats"
-	INFO       string = "info"
-	ITEM       string = "item"
+	PAGE_SEARCH     string = "search"
+	PAGE_CATEGORIES string = "cats"
+	PAGE_INFO       string = "info"
+	PAGE_ITEM       string = "item"
 )
 
 func main() {
@@ -63,7 +64,7 @@ func returnTemplate(w http.ResponseWriter, page string, pageData interface{}) {
 	// Get current app path
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {
-		panic("No caller information")
+		logger.Err("No caller information")
 	}
 	folder := path.Dir(file)
 
@@ -72,13 +73,13 @@ func returnTemplate(w http.ResponseWriter, page string, pageData interface{}) {
 
 	t, err := template.New("t").Funcs(getTemplateFuncMap()).ParseFiles(always...)
 	if err != nil {
-		panic(err)
+		logger.ErrExit(err.Error())
 	}
 
 	// Write a respone
 	err = t.ExecuteTemplate(w, page, pageData)
 	if err != nil {
-		panic(err)
+		logger.ErrExit(err.Error())
 	}
 }
 
@@ -105,7 +106,7 @@ func getTemplateFuncMap() map[string]interface{} {
 func fileServer(r chi.Router, path string, root http.FileSystem) {
 
 	if strings.ContainsAny(path, "{}*") {
-		panic("FileServer does not permit URL parameters.")
+		logger.ErrExit("FileServer does not permit URL parameters.")
 	}
 
 	fs := http.StripPrefix(path, http.FileServer(root))

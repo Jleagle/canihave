@@ -10,6 +10,7 @@ import (
 
 	amaz "github.com/Jleagle/canihave/amazon"
 	"github.com/Jleagle/canihave/location"
+	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
 	"github.com/VividCortex/mysqlerr"
@@ -197,7 +198,7 @@ func (i *Item) saveToMemcache() {
 
 	err := store.GetMemcacheConnection().Set(&memcache.Item{Key: i.ID, Value: EncodeItem(*i)})
 	if err != nil {
-		panic(err)
+		logger.Err("Failed to save to memcache: " + err.Error())
 	}
 }
 
@@ -232,21 +233,19 @@ func (i *Item) saveToMysql() {
 	}
 
 	if i.Region == "" {
-		panic("no region")
+		logger.Err("Item has no region")
+		// todo, return error
 	}
 
 	builder := squirrel.Insert("items")
 	builder = builder.Columns("id", "dateCreated", "dateUpdated", "dateScanned", "name", "link", "source", "salesRank", "photo", "node", "nodeName", "price", "region", "hits", "status", "type", "companyName")
 	builder = builder.Values(i.ID, i.DateCreated, i.DateUpdated, i.DateScanned, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.Node, i.NodeName, i.Price, i.Region, i.Hits, i.Status, i.Type, i.CompanyName)
 
-	_, err := store.Insert(builder)
-	//defer rows.Close()
+	err := store.Insert(builder)
 
 	if sqlerr, ok := err.(*mysql.MySQLError); ok {
 		if sqlerr.Number == mysqlerr.ER_DUP_ENTRY { // Duplicate entry
-			return
-		}
-		if sqlerr.Number == mysqlerr.ER_CON_COUNT_ERROR { // Too many connections
+			fmt.Println("#3 " + err.Error())
 			return
 		}
 	}

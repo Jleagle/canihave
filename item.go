@@ -42,7 +42,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Flag = location.GetAmazonRegion(w, r)
 	vars.Flags = location.GetRegions()
 	vars.Path = r.URL.Path
-	vars.WebPage = ITEM
+	vars.WebPage = PAGE_ITEM
 	vars.Similar = item.GetSimilar()
 
 	returnTemplate(w, "item", vars)

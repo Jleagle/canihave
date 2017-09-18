@@ -60,7 +60,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Page = pageInt
 	vars.PageLimit = pageLimit
 	vars.Path = r.URL.Path
-	vars.WebPage = SEARCH
+	vars.WebPage = PAGE_SEARCH
 
 	returnTemplate(w, "search", vars)
 }

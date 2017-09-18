@@ -8,11 +8,13 @@ import (
 	"regexp"
 
 	"github.com/Jleagle/canihave/location"
+	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/models"
 )
 
 const (
-	MANUAL           string = "manual"
+	MANUAL string = "manual"
+
 	ShitYouCanAfford string = "shityoucanafford"
 	WannaSpend       string = "wannaspend"
 	DatTwenty        string = "dattwenty"
@@ -22,6 +24,8 @@ const (
 )
 
 func ScrapeHandler(social bool) {
+
+	// todo, get all items and pass them in so not to add them
 
 	getSingle(social, ShitYouCanAfford, "http://shityoucanafford.com/")
 	getSingle(social, DatTwenty, "http://dattwenty.com/pages/home")
@@ -55,8 +59,7 @@ func getSingle(social bool, source string, url string) {
 			item.GetWithExtras()
 
 			if item.Region == "" {
-				fmt.Printf("%v", m)
-				panic("up")
+				logger.Err("Item has no region when being scraped")
 			}
 		}
 

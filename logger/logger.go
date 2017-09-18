@@ -30,23 +30,26 @@ func Info(message string) {
 	}
 }
 
-func Err(err error) {
-
-	message := err.Error()
+func Err(message string) {
 
 	logLocal("Error: " + message)
 
-	logger, client := getLogger()
+	l, client := getLogger()
 
-	logger.Log(logging.Entry{
+	l.Log(logging.Entry{
 		Severity: logging.Error,
 		Payload:  message,
 	})
 
-	err = client.Close()
+	err := client.Close()
 	if err != nil {
 		log.Fatalf("Failed to close client: %v", err)
 	}
+}
+
+func ErrExit(message string) {
+	Err(message)
+	os.Exit(1)
 }
 
 func getLogger() (logger *logging.Logger, client *logging.Client) {

@@ -15,7 +15,7 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Flag = location.GetAmazonRegion(w, r)
 	vars.Flags = location.GetRegions()
 	vars.Path = r.URL.Path
-	vars.WebPage = INFO
+	vars.WebPage = PAGE_INFO
 
 	returnTemplate(w, "info", vars)
 	return

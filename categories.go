@@ -33,7 +33,7 @@ func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Flags = location.GetRegions()
 	vars.Items = results
 	vars.Path = r.URL.Path
-	vars.WebPage = CATEGORIES
+	vars.WebPage = PAGE_CATEGORIES
 
 	returnTemplate(w, "categories", vars)
 }

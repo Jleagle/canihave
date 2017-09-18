@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Jleagle/canihave/logger"
 	"github.com/Masterminds/squirrel"
 	"github.com/bradfitz/gomemcache/memcache"
 )
@@ -27,15 +28,20 @@ func GetMysqlConnection() *sql.DB {
 
 	if mysqlConnection == nil {
 
-		password := os.Getenv("SQL_PW")
+		database := os.Getenv("CANIHAVE_SQL_DB")
+		username := os.Getenv("CANIHAVE_SQL_USERNAME")
+		password := os.Getenv("CANIHAVE_SQL_PW")
 		if len(password) > 0 {
 			password = ":" + password
 		}
 
+		dsn := fmt.Sprintf("%s%s@tcp(%s:%s)/%s",
+			username, password, "127.0.0.1", "3306", database)
+
 		var err error
-		mysqlConnection, err = sql.Open("mysql", "root"+password+"@tcp(127.0.0.1:3306)/canihave")
+		mysqlConnection, err = sql.Open("mysql", dsn)
 		if err != nil {
-			panic(err.Error())
+			logger.Err("Can not connect to MySQL: " + err.Error())
 		}
 	}
 
@@ -62,14 +68,14 @@ func getPrepareStatement(query string) (statement *sql.Stmt) {
 	var err error
 	statement, err = conn.Prepare(query)
 	if err != nil {
-		panic(err.Error())
+		logger.Err("Can't run prepared statement: " + err.Error())
 	}
 
 	mysqlPrepareStatements[hash] = statement
 	return statement
 }
 
-func Insert(builder squirrel.InsertBuilder) (rows *sql.Rows, err error) {
+func Insert(builder squirrel.InsertBuilder) (err error) {
 
 	rawSQL, args, err := builder.ToSql()
 	if err != nil {
@@ -80,9 +86,9 @@ func Insert(builder squirrel.InsertBuilder) (rows *sql.Rows, err error) {
 
 	prep := getPrepareStatement(rawSQL)
 
-	rows, err = prep.Query(args...)
+	_, err = prep.Exec(args...)
 
-	return rows, err
+	return err
 }
 
 func Query(builder squirrel.SelectBuilder) (rows *sql.Rows) {

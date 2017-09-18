@@ -24,7 +24,7 @@ func SetRateLimit() {
 func getAmazonClient(region string) (client *amazon.Client) {
 
 	<-RateLimit
-	logger.Info(os.Getenv("CANIHAVE_AWS_ACCESS_KEY_ID"))
+
 	client, err := amazon.New(
 		os.Getenv("CANIHAVE_AWS_ACCESS_KEY_ID"),
 		os.Getenv("CANIHAVE_AWS_SECRET_ACCESS_KEY"),
@@ -32,7 +32,7 @@ func getAmazonClient(region string) (client *amazon.Client) {
 		amazon.Region(region),
 	)
 	if err != nil {
-		logger.Err(err)
+		logger.Err("Can't create Amazon client: " + err.Error())
 	}
 
 	return client

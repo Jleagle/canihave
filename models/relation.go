@@ -8,6 +8,7 @@ import (
 	"time"
 
 	amaz "github.com/Jleagle/canihave/amazon"
+	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
 	"github.com/go-sql-driver/mysql"
@@ -62,8 +63,7 @@ func findSimilar(id string, region string) {
 		builder = builder.Columns("id", "relatedId", "dateCreated", "type")
 		builder = builder.Values(id, item.ID, time.Now().Unix(), TYPE_SIMILAR)
 
-		rows, err := store.Insert(builder)
-		defer rows.Close()
+		err := store.Insert(builder)
 
 		if sqlerr, ok := err.(*mysql.MySQLError); ok {
 			if sqlerr.Number == 1062 { // Duplicate entry
@@ -72,7 +72,7 @@ func findSimilar(id string, region string) {
 		}
 
 		if err != nil {
-			panic(err.Error())
+			logger.Err("Can't insert related item: " + err.Error())
 		}
 	}
 }
