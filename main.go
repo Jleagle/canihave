@@ -28,8 +28,6 @@ const (
 
 func main() {
 
-	//logger.Notice()
-
 	location.SetRegions()
 	amaz.SetRateLimit()
 

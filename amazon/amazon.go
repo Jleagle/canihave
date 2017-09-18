@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Jleagle/canihave/location"
+	"github.com/Jleagle/canihave/logger"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
 )
 
@@ -23,15 +24,15 @@ func SetRateLimit() {
 func getAmazonClient(region string) (client *amazon.Client) {
 
 	<-RateLimit
-
+	logger.Info(os.Getenv("CANIHAVE_AWS_ACCESS_KEY_ID"))
 	client, err := amazon.New(
-		os.Getenv("AWS_ACCESS_KEY_ID"),
-		os.Getenv("AWS_SECRET_ACCESS_KEY"),
+		os.Getenv("CANIHAVE_AWS_ACCESS_KEY_ID"),
+		os.Getenv("CANIHAVE_AWS_SECRET_ACCESS_KEY"),
 		location.GetAmazonTag(region),
 		amazon.Region(region),
 	)
 	if err != nil {
-		log.Fatal(err)
+		logger.Err(err)
 	}
 
 	return client

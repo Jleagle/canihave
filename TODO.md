@@ -18,3 +18,6 @@ TODO
 - Post to social networks automatically
 - give priority to main items on sitemap
 - add max retries for amazon api calls
+- IsValidRegion should use local constants
+- make sure scraped items that exist shange their type to scraped
+- delete items that exist and amazon says they dont, check after a week

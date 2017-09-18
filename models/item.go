@@ -88,7 +88,9 @@ func (i *Item) GetWithExtras() {
 
 	i.Get()
 
-	if i.Status == "" && i.Region != "" && i.DateScanned == 0 {
+	lastWeek := time.Now().AddDate(0, 0, -7)
+
+	if i.Status == "" && i.Region != "" && i.DateScanned < lastWeek.Unix() {
 		findSimilar(i.ID, i.Region)
 		findNodeitems(i.Node, i.Region)
 	}
