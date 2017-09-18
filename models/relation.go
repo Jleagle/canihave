@@ -82,6 +82,10 @@ func findNodeitems(node string, region string) {
 	//nodeItems, err := amaz.GetNodeDetails(node, region)
 }
 
+func findReviews(){
+
+}
+
 func (i Item) GetSimilar() (items []Item) {
 
 	// Get relations

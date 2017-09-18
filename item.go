@@ -32,7 +32,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !bots.IsBot(r.UserAgent()) {
-		item.IncrementHits()
+		go item.IncrementHits()
 	}
 
 	// Return template

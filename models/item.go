@@ -71,18 +71,19 @@ func (i *Item) GetFlag() string {
 	return "/assets/flags/" + i.Region + ".gif"
 }
 
-func (i *Item) IncrementHits() (item Item) {
-
-	conn := store.GetMysqlConnection()
-
-	_, err := conn.Exec("UPDATE items SET hits = hits + 1 WHERE id = ?", i.ID)
-	if err != nil {
-		fmt.Println(err)
-	}
+func (i *Item) IncrementHits() {
 
 	i.Hits++
 
-	return item
+	builder := squirrel.Update("items").Set("hits", squirrel.Expr("hits + 1")).Where("id = ?", i.ID)
+	err := store.Update(builder)
+
+	if err != nil {
+		logger.Err("Cant increment hits query: " + err.Error())
+	}
+
+	// Clear cache
+	store.GetMemcacheConnection().Delete(i.ID)
 }
 
 func (i *Item) GetWithExtras() {
@@ -94,6 +95,10 @@ func (i *Item) GetWithExtras() {
 	if i.Status == "" && i.Region != "" && i.DateScanned < lastWeek.Unix() {
 		findSimilar(i.ID, i.Region)
 		findNodeitems(i.Node, i.Region)
+		findReviews()
+
+		// Update DateScanned
+		store.Update(squirrel.Update("items").Set("DateScanned", time.Now().Unix()).Where("id = ?"))
 	}
 
 }
@@ -110,13 +115,13 @@ func (i *Item) Get() {
 
 	// Get from cache
 	if i.getFromMemcache() {
-		fmt.Println("Retrieving " + i.ID + " from cache")
+		logger.Info("Retrieving " + i.ID + " from cache")
 		return
 	}
 
 	// Get from MySQL
 	if i.getFromMysql() {
-		fmt.Println("Retrieving " + i.ID + " from SQL")
+		logger.Info("Retrieving " + i.ID + " from SQL")
 		i.saveToMemcache()
 		return
 	}
@@ -213,7 +218,7 @@ func (i *Item) getFromMysql() (found bool) {
 		if err.Error() == "sql: no rows in result set" {
 			// No problem
 		} else {
-			fmt.Println("#1 " + err.Error())
+			logger.Err("Can't retrieve from MySQL: " + err.Error())
 		}
 		return false
 	}
@@ -245,13 +250,13 @@ func (i *Item) saveToMysql() {
 
 	if sqlerr, ok := err.(*mysql.MySQLError); ok {
 		if sqlerr.Number == mysqlerr.ER_DUP_ENTRY { // Duplicate entry
-			fmt.Println("#3 " + err.Error())
+			logger.Info("Trying to insert dupe entry: " + err.Error())
 			return
 		}
 	}
 
 	if err != nil {
-		fmt.Println("Trying to add item to Mysql: " + err.Error())
+		logger.Err("Trying to add item to Mysql: " + err.Error())
 	}
 }
 
@@ -292,7 +297,7 @@ func (i *Item) getFromAmazon() (found bool) {
 func DecodeItem(raw []byte) (item Item) {
 	err := json.Unmarshal(raw, &item)
 	if err != nil {
-		fmt.Println("Error decoding item to JSON", err)
+		logger.Err("Error decoding item to JSON: " + err.Error())
 	}
 	return item
 }
@@ -300,7 +305,7 @@ func DecodeItem(raw []byte) (item Item) {
 func EncodeItem(item Item) []byte {
 	enc, err := json.Marshal(item)
 	if err != nil {
-		fmt.Println("Error encoding item to JSON", err)
+		logger.Err("Error encoding item to JSON: " + err.Error())
 	}
 	return enc
 }

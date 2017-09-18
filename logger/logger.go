@@ -17,17 +17,17 @@ func Info(message string) {
 
 	logLocal("Notice: " + message)
 
-	logger, client := getLogger()
+	l, client := getLogger()
 
-	logger.Log(logging.Entry{
+	l.Log(logging.Entry{
 		Severity: logging.Notice,
 		Payload:  message,
 	})
 
-	err := client.Close()
-	if err != nil {
-		log.Fatalf("Failed to close client: %v", err)
-	}
+	go client.Close()
+	//if err != nil {
+	//	log.Fatalf("Failed to close client: %v", err)
+	//}
 }
 
 func Err(message string) {
@@ -41,10 +41,10 @@ func Err(message string) {
 		Payload:  message,
 	})
 
-	err := client.Close()
-	if err != nil {
-		log.Fatalf("Failed to close client: %v", err)
-	}
+	go client.Close()
+	//if err != nil {
+	//	log.Fatalf("Failed to close client: %v", err)
+	//}
 }
 
 func ErrExit(message string) {

@@ -79,10 +79,26 @@ func Insert(builder squirrel.InsertBuilder) (err error) {
 
 	rawSQL, args, err := builder.ToSql()
 	if err != nil {
-		fmt.Println(err)
+		logger.Err("Can't make insert SQL: " + err.Error())
 	}
 
-	//fmt.Println(rawSQL)
+	logger.Info("SQL: " + rawSQL)
+
+	prep := getPrepareStatement(rawSQL)
+
+	_, err = prep.Exec(args...)
+
+	return err
+}
+
+func Update(builder squirrel.UpdateBuilder) (err error) {
+
+	rawSQL, args, err := builder.ToSql()
+	if err != nil {
+		logger.Err("Can't make update SQL: " + err.Error())
+	}
+
+	logger.Info("SQL: " + rawSQL)
 
 	prep := getPrepareStatement(rawSQL)
 
@@ -95,10 +111,10 @@ func Query(builder squirrel.SelectBuilder) (rows *sql.Rows) {
 
 	rawSQL, args, err := builder.ToSql()
 	if err != nil {
-		fmt.Println(err)
+		logger.Err("Can't make query SQL: " + err.Error())
 	}
 
-	//fmt.Println(rawSQL)
+	logger.Info("SQL: " + rawSQL)
 
 	prep := getPrepareStatement(rawSQL)
 
@@ -114,10 +130,10 @@ func QueryRow(builder squirrel.SelectBuilder) *sql.Row {
 
 	rawSQL, args, err := builder.ToSql()
 	if err != nil {
-		fmt.Println(err)
+		logger.Err("Can't make query SQL: " + err.Error())
 	}
 
-	//fmt.Println(rawSQL)
+	logger.Info("SQL: " + rawSQL)
 
 	prep := getPrepareStatement(rawSQL)
 
