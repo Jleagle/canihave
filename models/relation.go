@@ -82,38 +82,25 @@ func findNodeitems(node string, region string) {
 	//nodeItems, err := amaz.GetNodeDetails(node, region)
 }
 
-func findReviews(){
+func findReviews() {
 
 }
 
 func (i Item) GetSimilar() (items []Item) {
 
-	// Get relations
 	builder := squirrel.Select("relatedId").From("relations").Where("id = ? AND type = ?", i.ID, TYPE_SIMILAR)
 	rows := store.Query(builder)
 	defer rows.Close()
 
-	relation := Relation{}
-	relations := []Relation{}
-
 	for rows.Next() {
 
-		err := rows.Scan(&relation.RelatedID)
+		item := Item{}
+
+		err := rows.Scan(&item.ID)
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		relations = append(relations, relation)
-	}
-
-	if len(relations) < 1 {
-		return []Item{}
-	}
-
-	for _, v := range relations {
-
-		item := Item{}
-		item.ID = v.RelatedID
 		item.Get()
 
 		items = append(items, item)

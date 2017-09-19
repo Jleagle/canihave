@@ -2,16 +2,22 @@ package main
 
 import (
 	"encoding/base64"
+	"encoding/binary"
 	"fmt"
 	"log"
 	"math"
 	"net/http"
 	"strconv"
 
+	"crypto/md5"
+	"encoding/hex"
+
 	"github.com/Jleagle/canihave/location"
+	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/models"
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
+	"github.com/bradfitz/gomemcache/memcache"
 )
 
 var perPage int = 94
@@ -27,7 +33,12 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	search := params.Get("search")
 	category := params.Get("cat")
 
-	pageLimit := getPageLimit(search, category, region)
+	pageLimit, err := getPageLimit(search, category, region)
+	if err != nil {
+		logger.Err("Can't count all items: " + err.Error())
+		returnTemplate(w, "error", errorVars{HTTPCode: 503})
+		return
+	}
 	pageLimit = int(math.Max(float64(pageLimit), 1))
 
 	page := params.Get("page")
@@ -90,19 +101,49 @@ func getResults(search string, category string, region string, page int) []model
 	return results
 }
 
-func getPageLimit(search string, category string, region string) int {
+func getPageLimit(search string, category string, region string) (ret int, err error) {
 
-	query := squirrel.Select("count(id) as count").From("items")
-	query = filter(query, search, category, region)
+	// Get memcache key
+	md5ByteArray := md5.Sum([]byte(search))
+	searchHash := hex.EncodeToString(md5ByteArray[:])
+	mcKey := "total-items-count-" + category + "-" + region + "-" + searchHash
 
-	var count int
-	err := store.QueryRow(query).Scan(&count)
-	if err != nil {
-		fmt.Println(err)
+	mc := store.GetMemcacheConnection()
+	mcItem, err := mc.Get(mcKey)
+
+	if err == memcache.ErrCacheMiss || true {
+
+		query := squirrel.Select("count(id) as count").From("items")
+		query = filter(query, search, category, region)
+
+		var count int
+		err := store.QueryRow(query).Scan(&count)
+		ret := math.Ceil(float64(count) / float64(perPage))
+
+		mc.Set(&memcache.Item{Key: mcKey, Value: float64bytes(ret)})
+		return int(ret), err
+
+	} else if err != nil {
+
+		return int(binary.BigEndian.Uint64(mcItem.Value)), err
+	} else {
+
+		logger.Err("Memcache didnt return error and it should have")
+		return 0, err
 	}
+}
 
-	d := float64(count) / float64(perPage)
-	return int(math.Ceil(d))
+func float64frombytes(bytes []byte) float64 {
+	bits := binary.LittleEndian.Uint64(bytes)
+	float := math.Float64frombits(bits)
+	return float
+}
+
+func float64bytes(float float64) []byte {
+	bits := math.Float64bits(float)
+	bytes := make([]byte, 8)
+	binary.LittleEndian.PutUint64(bytes, bits)
+	return bytes
 }
 
 func filter(query squirrel.SelectBuilder, search string, category string, region string) squirrel.SelectBuilder {

@@ -20,6 +20,7 @@ import (
 )
 
 const (
+	TYPE_MANUAL    string = "manual"
 	TYPE_SCRAPE    string = "scrape"
 	TYPE_SIMILAR   string = "similar"
 	TYPE_NODE      string = "node"
@@ -95,6 +96,14 @@ func (i *Item) IncrementHits() {
 
 func (i *Item) GetWithExtras() {
 
+	if i.Region == "" {
+		i.Region = location.US
+	}
+
+	if i.Type == "" {
+		i.Type = TYPE_MANUAL
+	}
+
 	i.Get()
 
 	lastWeek := time.Now().AddDate(0, 0, -7)
@@ -105,7 +114,10 @@ func (i *Item) GetWithExtras() {
 		findReviews()
 
 		// Update DateScanned
-		store.Update(squirrel.Update("items").Set("DateScanned", time.Now().Unix()).Where("id = ?"))
+		err := store.Update(squirrel.Update("items").Set("DateScanned", time.Now().Unix()).Where("id = ?", i.ID))
+		if err != nil {
+			logger.Info("Can't update DateScanned: " + err.Error())
+		}
 	}
 
 }
@@ -174,7 +186,7 @@ func (i *Item) Get() {
 
 func (i *Item) getFromMemcache() (found bool) {
 
-	byteArray, err := store.GetMemcacheConnection().Get(i.ID)
+	mcItem, err := store.GetMemcacheConnection().Get(i.ID)
 
 	if err == memcache.ErrCacheMiss {
 		return false
@@ -183,7 +195,7 @@ func (i *Item) getFromMemcache() (found bool) {
 		return false
 	}
 
-	item := DecodeItem(byteArray.Value)
+	item := DecodeItem(mcItem.Value)
 	item = interfaceToItem(item)
 
 	i.DateCreated = item.DateCreated

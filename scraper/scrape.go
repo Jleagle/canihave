@@ -50,7 +50,7 @@ func getSingle(social bool, source string, url string) {
 		for _, link := range links {
 
 			m := r.FindStringSubmatch(link)
-			//fmt.Printf("%v", m)
+			fmt.Printf("%v", m)
 
 			item.Region = location.TLDToRegion(m[2])
 			item.ID = m[4]
