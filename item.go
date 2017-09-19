@@ -7,6 +7,7 @@ import (
 	"github.com/Jleagle/canihave/bots"
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/models"
+	"github.com/Jleagle/canihave/social"
 	"github.com/go-chi/chi"
 )
 
@@ -25,6 +26,8 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	item := models.Item{}
 	item.ID = id
 	item.GetWithExtras()
+
+	social.PostToTwitter(item)
 
 	if item.Link == "" {
 		returnTemplate(w, "error", errorVars{HTTPCode: 404, Message: "Can't find item"})

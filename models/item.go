@@ -54,9 +54,16 @@ func (i *Item) GetAmazonLink() string {
 	return i.Link
 }
 
-func (i *Item) GetDetailsLink() string {
-	slug := slugify.Marshal(i.Name, true)
-	return "/" + i.ID + "/" + slug
+func (i *Item) GetSlug() string {
+	return slugify.Marshal(i.Name, true)
+}
+
+func (i *Item) GetPath() string {
+	return "/" + i.ID + "/" + i.GetSlug()
+}
+
+func (i *Item) GetLink() string {
+	return "https://canihave.one" + i.GetPath()
 }
 
 func (i *Item) GetPrice() float32 {
