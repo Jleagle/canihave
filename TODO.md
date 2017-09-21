@@ -20,7 +20,8 @@ TODO
 - add max retries for amazon api calls
 - IsValidRegion should use local constants
 - make sure scraped items that exist shange their type to scraped
-- delete items that exist and amazon says they dont, check after a week
+- change status of items that dont exist on amazon anymore
 - find a better place for search social buttons
 - when scraping grab more than one item with the api at a time
 - make a function that retrieves an array of items and use this for everything! all 3 levels support multi retrieve
+- dont use mysql offsets

@@ -1,12 +1,16 @@
 package amazon
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 	"time"
 
+	"regexp"
+
+	"github.com/Jleagle/canihave/helpers"
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/logger"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
@@ -38,7 +42,13 @@ func getAmazonClient(region string) (client *amazon.Client) {
 	return client
 }
 
-func GetItemDetails(id string, region string) (resp *amazon.ItemLookupResponse, err error) {
+func GetItemDetails(ids []string, region string) (resp *amazon.ItemLookupResponse, err error) {
+
+	ids = helpers.RemoveDuplicatesUnordered(ids)
+
+	if len(ids) > 10 {
+		return nil, errors.New("you can only query 10 items at a time")
+	}
 
 	client := getAmazonClient(region)
 
@@ -49,15 +59,68 @@ func GetItemDetails(id string, region string) (resp *amazon.ItemLookupResponse, 
 			amazon.ItemLookupResponseGroupEditorialReview,
 		},
 		IDType:  amazon.IDTypeASIN,
-		ItemIDs: []string{id},
+		ItemIDs: ids,
 	}).Do()
 
 	if err != nil && strings.Contains(err.Error(), "RequestThrottled") {
 
-		return GetItemDetails(id, region)
+		return GetItemDetails(ids, region)
 	}
 
 	return resp, err
+}
+
+// Will return an error if any of the IDs fail
+func GetItemDetailsBulk(ids []string, region string) (ret []amazon.Item) {
+
+	// Chunk the IDs into 10s
+	items := [][]string{}
+	subItems := []string{}
+
+	for _, v := range ids {
+
+		subItems = append(subItems, v)
+
+		if len(subItems) == 10 {
+			items = append(items, subItems)
+			subItems = []string{}
+		}
+	}
+
+	if len(subItems) > 0 {
+		items = append(items, subItems)
+		subItems = []string{}
+	}
+
+	count := 0
+	for _, subItem := range items {
+
+		count += 10
+		fmt.Print(count)
+
+		amazonItems, err := GetItemDetails(subItem, region)
+		if err != nil && strings.Contains(err.Error(), "AWS.InvalidParameterValue") {
+
+			// One of the bunch failed
+			r := regexp.MustCompile(`Value: ([A-Z0-9]{10}) is not`)
+			links := r.FindAllString(err.Error(), 1)
+
+			logger.Err("One item in a batch failed: " + links[1])
+
+		} else if err != nil {
+
+			// Fail
+			logger.Err("Can't get amazon items: " + err.Error())
+		} else {
+
+			// Success
+			for _, v := range amazonItems.Items.Item {
+				ret = append(ret, v)
+			}
+		}
+	}
+
+	return ret
 }
 
 func GetSimilarItems(id string, region string) (resp *amazon.SimilarityLookupResponse, err error) {

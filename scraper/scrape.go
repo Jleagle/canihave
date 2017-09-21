@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/Jleagle/canihave/helpers"
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/models"
@@ -43,8 +44,8 @@ func getSingle(social bool, source string, url string) {
 		r := regexp.MustCompile(`http(.*?)amazon.([a-z]{2,3})/(.*?)/([A-Z0-9]{10})`)
 		links := r.FindAllString(body, -1)
 
-		links = removeDuplicatesUnordered(links)
-		links = arrayReverse(links)
+		links = helpers.RemoveDuplicatesUnordered(links)
+		links = helpers.ArrayReverse(links)
 
 		item := models.Item{}
 		for _, link := range links {
@@ -90,27 +91,4 @@ func doCurl(url string) (body string, code int) {
 	}
 
 	return string(bytes), resp.StatusCode
-}
-
-func removeDuplicatesUnordered(elements []string) []string {
-	encountered := map[string]bool{}
-
-	// Create a map of all unique elements.
-	for v := range elements {
-		encountered[elements[v]] = true
-	}
-
-	// Place all keys from the map into a slice.
-	result := []string{}
-	for key, _ := range encountered {
-		result = append(result, key)
-	}
-	return result
-}
-
-func arrayReverse(s []string) []string {
-	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
-		s[i], s[j] = s[j], s[i]
-	}
-	return s
 }

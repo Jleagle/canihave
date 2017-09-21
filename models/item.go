@@ -9,6 +9,7 @@ import (
 	"time"
 
 	amaz "github.com/Jleagle/canihave/amazon"
+	"github.com/Jleagle/canihave/helpers"
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/store"
@@ -17,6 +18,7 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-sql-driver/mysql"
 	"github.com/metal3d/go-slugify"
+	"github.com/ngs/go-amazon-product-advertising-api/amazon"
 )
 
 const (
@@ -92,6 +94,79 @@ func (i *Item) IncrementHits() {
 
 	// Clear cache
 	store.GetMemcacheConnection().Delete(i.ID)
+}
+
+func GetMulti(ids []string, region string) (items []Item) {
+
+	// Memcache
+	mcItems, err := store.GetMemcacheConnection().GetMulti(ids)
+	if err != nil {
+		logger.Err("Can't get from memcache: " + err.Error())
+	}
+
+	for _, v := range mcItems {
+		item := DecodeItem(v.Value)
+		items = append(items, item)
+		ids = helpers.RemFromArray(ids, item.ID)
+	}
+
+	// MySQL
+	builder := squirrel.Select("*").From("items").Where(squirrel.Eq{"id": ids})
+	rows := store.Query(builder)
+	defer rows.Close()
+
+	for rows.Next() {
+		i := Item{}
+		err := rows.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Status, &i.Type, &i.CompanyName)
+		if err.Error() == "sql: no rows in result set" {
+			// No problem
+		} else if err != nil {
+			logger.Err("Can't scan item: " + err.Error())
+		}
+
+		items = append(items, i)
+		ids = helpers.RemFromArray(ids, i.ID)
+	}
+
+	// Amazon
+	for _, v := range ids {
+
+		response, err := amaz.GetItemDetails([]string{v}, region)
+
+		if len(response.Items.Item) > 0 && err == nil {
+
+			item := amazonItemToItem(response.Items.Item[0])
+			items = append(items, item)
+		} else {
+
+			logger.Err("Can't get item from amazon: " + err.Error())
+		}
+	}
+
+	return items
+}
+
+func amazonItemToItem(amazonItem amazon.Item) (item Item) {
+
+	var err error
+	if amazonItem.ItemAttributes.ListPrice.Amount == "" {
+		item.Price = 0
+	} else {
+		item.Price, err = strconv.Atoi(amazonItem.ItemAttributes.ListPrice.Amount)
+		if err != nil {
+			log.Fatal("Error converting string to int")
+		}
+	}
+
+	item.Name = amazonItem.ItemAttributes.Title
+	item.Link = amazonItem.DetailPageURL
+	item.SalesRank = amazonItem.SalesRank
+	item.Photo = amazonItem.LargeImage.URL
+	item.Node = "0" //todo
+	item.NodeName = amazonItem.ItemAttributes.ProductGroup
+	item.CompanyName = amazonItem.ItemAttributes.Manufacturer
+
+	return item
 }
 
 func (i *Item) GetWithExtras() {
@@ -281,7 +356,7 @@ func (i *Item) saveToMysql() {
 
 func (i *Item) getFromAmazon() (found bool) {
 
-	response, err := amaz.GetItemDetails(i.ID, i.Region)
+	response, err := amaz.GetItemDetails([]string{i.ID}, i.Region)
 
 	if len(response.Items.Item) > 0 && err == nil {
 
