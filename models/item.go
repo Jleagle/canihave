@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -15,7 +16,6 @@ import (
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
 	"github.com/VividCortex/mysqlerr"
-	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-sql-driver/mysql"
 	"github.com/metal3d/go-slugify"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
@@ -81,31 +81,75 @@ func (i *Item) GetFlag() string {
 	return "/assets/flags/" + i.Region + ".gif"
 }
 
-func (i *Item) IncrementHits() {
+func Get(id string, region string) (item Item, err error) {
 
-	i.Hits++
-
-	builder := squirrel.Update("items").Set("hits", squirrel.Expr("hits + 1")).Where("id = ?", i.ID)
-	err := store.Update(builder)
-
+	// Get from cache
+	item, err = getFromMemcache(id)
 	if err != nil {
-		logger.Err("Cant increment hits query: " + err.Error())
+		logger.Info("Retrieving " + id + " from cache")
+		return item, err
 	}
 
-	// Clear cache
-	store.GetMemcacheConnection().Delete(i.ID)
+	// Get from MySQL
+	item, err = getFromMysql(id)
+	if err != nil {
+		logger.Info("Retrieving " + id + " from SQL")
+		saveToMemcache(item)
+		return item, err
+	}
+
+	// Get from Amazon
+	item, err = getFromAmazon(id, region)
+	if err != nil {
+		fmt.Println("Retrieving " + id + " from Amazon")
+		saveToMysql(item)
+		saveToMemcache(item)
+		return item, err
+	}
+
+	return item, err
+}
+
+func GetWithExtras(i Item) {
+
+	if i.Region == "" {
+		i.Region = location.US
+	}
+
+	if i.Type == "" {
+		i.Type = TYPE_MANUAL
+	}
+
+	item, err := Get(i.ID, i.Region)
+	if err != nil {
+		logger.Err("Something went wrong") // todo
+	}
+
+	lastWeek := time.Now().AddDate(0, 0, -7)
+
+	if item.Status == "" && item.Region != "" && item.DateScanned < lastWeek.Unix() {
+		findSimilar(item.ID, item.Region)
+		findNodeitems(item.Node, item.Region)
+		findReviews()
+
+		// Update DateScanned
+		err := store.Update(squirrel.Update("items").Set("DateScanned", time.Now().Unix()).Where("id = ?", i.ID))
+		if err != nil {
+			logger.Info("Can't update DateScanned: " + err.Error())
+		}
+	}
 }
 
 func GetMulti(ids []string, region string) (items []Item) {
 
 	// Memcache
-	mcItems, err := store.GetMemcacheConnection().GetMulti(ids)
+	mcItems, err := store.GetMemcacheMulti(ids)
 	if err != nil {
 		logger.Err("Can't get from memcache: " + err.Error())
 	}
 
 	for _, v := range mcItems {
-		item := DecodeItem(v.Value)
+		item := decodeItem(v.Value)
 		items = append(items, item)
 		ids = helpers.RemFromArray(ids, item.ID)
 	}
@@ -146,6 +190,15 @@ func GetMulti(ids []string, region string) (items []Item) {
 	return items
 }
 
+func IncrementHits(id string) {
+
+	builder := squirrel.Update("items").Set("hits", squirrel.Expr("hits + 1")).Where("id = ?", id)
+	err := store.Update(builder)
+	if err != nil {
+		logger.Err("Cant increment hits query: " + err.Error())
+	}
+}
+
 func amazonItemToItem(amazonItem amazon.Item) (item Item) {
 
 	var err error
@@ -169,234 +222,100 @@ func amazonItemToItem(amazonItem amazon.Item) (item Item) {
 	return item
 }
 
-func (i *Item) GetWithExtras() {
+func getFromMemcache(id string) (item Item, err error) {
 
-	if i.Region == "" {
-		i.Region = location.US
+	mcItem, err := store.GetMemcacheItem(id)
+	if err == nil {
+		return decodeItem(mcItem.Value), err
 	}
-
-	if i.Type == "" {
-		i.Type = TYPE_MANUAL
-	}
-
-	i.Get()
-
-	lastWeek := time.Now().AddDate(0, 0, -7)
-
-	if i.Status == "" && i.Region != "" && i.DateScanned < lastWeek.Unix() {
-		findSimilar(i.ID, i.Region)
-		findNodeitems(i.Node, i.Region)
-		findReviews()
-
-		// Update DateScanned
-		err := store.Update(squirrel.Update("items").Set("DateScanned", time.Now().Unix()).Where("id = ?", i.ID))
-		if err != nil {
-			logger.Info("Can't update DateScanned: " + err.Error())
-		}
-	}
-
+	logger.Err("Failed to get form memcache: " + err.Error())
+	return item, err
 }
 
-func (i *Item) Get() {
+func saveToMemcache(item Item) (success bool, err error) {
 
-	if i.Status != "" {
-		return
+	err = store.SetMemcacheItem(item.ID, encodeItem(item))
+	if err == nil {
+		return true, err
 	}
-
-	if i.ID == "" {
-		log.Fatal("Item needs an id")
-	}
-
-	// Get from cache
-	if i.getFromMemcache() {
-		logger.Info("Retrieving " + i.ID + " from cache")
-		return
-	}
-
-	// Get from MySQL
-	if i.getFromMysql() {
-		logger.Info("Retrieving " + i.ID + " from SQL")
-		i.saveToMemcache()
-		return
-	}
-
-	// Get from Amazon
-	if i.getFromAmazon() {
-		fmt.Println("Retrieving " + i.ID + " from Amazon")
-		i.saveToMysql()
-		i.saveToMemcache()
-		return
-	}
-
-	// Clear the data so it doesnt remember any items from before
-	// todo, do we need this?
-	i.DateCreated = 0
-	i.DateUpdated = 0
-	i.DateScanned = 0
-	i.Name = ""
-	i.Link = ""
-	i.Source = ""
-	i.SalesRank = 0
-	i.Photo = ""
-	i.Node = ""
-	i.NodeName = ""
-	i.Price = 0
-	i.CompanyName = ""
-
-	// Save invalid IDs so we dont query Amazon for them again
-	if strings.Contains(i.Status, "AWS.InvalidParameterValue") {
-
-		i.saveToMysql()
-		i.saveToMemcache()
-		return
-	}
-
-	// Try again
-	if strings.Contains(i.Status, "RequestThrottled") {
-
-		i.Get()
-		return
-	}
+	logger.Err("Failed to save to memcache: " + err.Error())
+	return false, err
 }
 
-func (i *Item) getFromMemcache() (found bool) {
-
-	mcItem, err := store.GetMemcacheConnection().Get(i.ID)
-
-	if err == memcache.ErrCacheMiss {
-		return false
-	} else if err != nil {
-		fmt.Println("Error fetching from memcache", err)
-		return false
-	}
-
-	item := DecodeItem(mcItem.Value)
-	item = interfaceToItem(item)
-
-	i.DateCreated = item.DateCreated
-	i.DateUpdated = item.DateUpdated
-	i.DateScanned = item.DateScanned
-	i.Name = item.Name
-	i.Link = item.Link
-	i.Source = item.Source
-	i.SalesRank = item.SalesRank
-	i.Photo = item.Photo
-	i.Node = item.Node
-	i.NodeName = item.NodeName
-	i.Price = item.Price
-	i.Region = item.Region
-	i.Hits = item.Hits
-	i.Status = item.Status
-	i.Type = item.Type
-	i.CompanyName = item.CompanyName
-
-	return true
-}
-
-func (i *Item) saveToMemcache() {
-
-	err := store.GetMemcacheConnection().Set(&memcache.Item{Key: i.ID, Value: EncodeItem(*i)})
-	if err != nil {
-		logger.Err("Failed to save to memcache: " + err.Error())
-	}
-}
-
-func (i *Item) getFromMysql() (found bool) {
+func getFromMysql(id string) (i Item, err error) {
 
 	// Make the query
 	builder := squirrel.Select("*").From("items").Where(squirrel.Eq{"id": i.ID}).Limit(1)
-
 	row := store.QueryRow(builder)
-	err := row.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Status, &i.Type, &i.CompanyName)
-	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
-			// No problem
-		} else {
-			logger.Err("Can't retrieve from MySQL: " + err.Error())
-		}
-		return false
-	}
+	err = row.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Status, &i.Type, &i.CompanyName)
 
-	return true
+	if err.Error() == "sql: no rows in result set" {
+		return i, err
+	} else if err != nil {
+		logger.Err("Can't retrieve from MySQL: " + err.Error())
+		return i, err
+	} else {
+		return i, err
+	}
 }
 
-func (i *Item) saveToMysql() {
+func saveToMysql(i Item) (success bool, err error) {
 
-	// todo, check this works
-	date := time.Now().Unix()
 	if i.DateCreated == 0 {
-		i.DateCreated = date
+		i.DateCreated = time.Now().Unix()
 	}
 	if i.DateUpdated == 0 {
-		i.DateUpdated = date
+		i.DateUpdated = time.Now().Unix()
 	}
 
 	if i.Region == "" {
 		logger.Err("Item has no region")
-		// todo, return error
+		return false, errors.New("can't save item into mysql with no region")
 	}
 
 	builder := squirrel.Insert("items")
 	builder = builder.Columns("id", "dateCreated", "dateUpdated", "dateScanned", "name", "link", "source", "salesRank", "photo", "node", "nodeName", "price", "region", "hits", "status", "type", "companyName")
 	builder = builder.Values(i.ID, i.DateCreated, i.DateUpdated, i.DateScanned, i.Name, i.Link, i.Source, i.SalesRank, i.Photo, i.Node, i.NodeName, i.Price, i.Region, i.Hits, i.Status, i.Type, i.CompanyName)
 
-	err := store.Insert(builder)
-
+	err = store.Insert(builder)
 	if sqlerr, ok := err.(*mysql.MySQLError); ok {
 		if sqlerr.Number == mysqlerr.ER_DUP_ENTRY { // Duplicate entry
 			logger.Info("Trying to insert dupe entry: " + err.Error())
-			return
+			return true, nil
 		}
 	}
 
-	if err != nil {
+	if err == nil {
+		return true, nil
+	} else {
 		logger.Err("Trying to add item to Mysql: " + err.Error())
+		return false, err
 	}
 }
 
-func (i *Item) getFromAmazon() (found bool) {
+func getFromAmazon(id string, region string) (item Item, err error) {
 
-	response, err := amaz.GetItemDetails([]string{i.ID}, i.Region)
+	response, err := amaz.GetItemDetails([]string{id}, region)
 
 	if len(response.Items.Item) > 0 && err == nil {
 
-		amazonItem := response.Items.Item[0]
-
-		// Price
-		var price int = 0
-		if amazonItem.ItemAttributes.ListPrice.Amount != "" {
-			price, err = strconv.Atoi(amazonItem.ItemAttributes.ListPrice.Amount)
-			if err != nil {
-				log.Fatal("Error converting string to int")
-			}
-		}
-
-		i.Name = amazonItem.ItemAttributes.Title
-		i.Link = amazonItem.DetailPageURL
-		i.SalesRank = amazonItem.SalesRank
-		i.Photo = amazonItem.LargeImage.URL
-		i.Node = "0" //todo
-		i.NodeName = amazonItem.ItemAttributes.ProductGroup
-		i.Price = price
-		i.CompanyName = amazonItem.ItemAttributes.Manufacturer
-
-		return true
+		return amazonItemToItem(response.Items.Item[0]), err
 	} else {
 
-		i.Status = err.Error()
-		return false
+		item.Status = err.Error()
+		return item, err
 	}
 }
 
-func DecodeItem(raw []byte) (item Item) {
-	err := json.Unmarshal(raw, &item)
+func decodeItem(raw []byte) (item Item) {
+	err := json.Unmarshal(raw, item)
 	if err != nil {
 		logger.Err("Error decoding item to JSON: " + err.Error())
 	}
 	return item
 }
 
-func EncodeItem(item Item) []byte {
+func encodeItem(item Item) []byte {
 	enc, err := json.Marshal(item)
 	if err != nil {
 		logger.Err("Error encoding item to JSON: " + err.Error())

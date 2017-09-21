@@ -9,20 +9,11 @@ import (
 
 	"github.com/Jleagle/canihave/logger"
 	"github.com/Masterminds/squirrel"
-	"github.com/bradfitz/gomemcache/memcache"
 )
 
 var mysqlConnection *sql.DB
-var memcacheConnection *memcache.Client
+
 var mysqlPrepareStatements map[string]*sql.Stmt
-
-func GetMemcacheConnection() *memcache.Client {
-
-	if memcacheConnection == nil {
-		memcacheConnection = memcache.New("127.0.0.1:11211")
-	}
-	return memcacheConnection
-}
 
 func GetMysqlConnection() *sql.DB {
 

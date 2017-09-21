@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"cloud.google.com/go/logging"
+	"github.com/Jleagle/canihave/environment"
 )
 
 const (
@@ -17,34 +18,32 @@ func Info(message string) {
 
 	logLocal("Notice: " + message)
 
-	l, client := getLogger()
+	if environment.IsLive() {
+		l, client := getLogger()
 
-	l.Log(logging.Entry{
-		Severity: logging.Notice,
-		Payload:  message,
-	})
+		l.Log(logging.Entry{
+			Severity: logging.Notice,
+			Payload:  message,
+		})
 
-	go client.Close()
-	//if err != nil {
-	//	log.Fatalf("Failed to close client: %v", err)
-	//}
+		go client.Close()
+	}
 }
 
 func Err(message string) {
 
 	logLocal("Error: " + message)
 
-	l, client := getLogger()
+	if environment.IsLive() {
+		l, client := getLogger()
 
-	l.Log(logging.Entry{
-		Severity: logging.Error,
-		Payload:  message,
-	})
+		l.Log(logging.Entry{
+			Severity: logging.Error,
+			Payload:  message,
+		})
 
-	go client.Close()
-	//if err != nil {
-	//	log.Fatalf("Failed to close client: %v", err)
-	//}
+		go client.Close()
+	}
 }
 
 func ErrExit(message string) {
@@ -60,7 +59,7 @@ func getLogger() (logger *logging.Logger, client *logging.Client) {
 		log.Fatalf("Failed to create logging client: %v", err)
 	}
 
-	if os.Getenv("CANIHAVE_ENV") == "local" {
+	if environment.IsLocal() {
 		return client.Logger("env-local"), client
 	}
 
@@ -69,7 +68,7 @@ func getLogger() (logger *logging.Logger, client *logging.Client) {
 
 func logLocal(message string) {
 
-	if os.Getenv("CANIHAVE_ENV") == "local" {
+	if environment.IsLocal() {
 		fmt.Println(message)
 	}
 }

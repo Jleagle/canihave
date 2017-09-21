@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 	"time"
-
-	"regexp"
 
 	"github.com/Jleagle/canihave/helpers"
 	"github.com/Jleagle/canihave/location"

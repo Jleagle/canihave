@@ -108,10 +108,9 @@ func getPageLimit(search string, category string, region string) (ret int, err e
 	searchHash := hex.EncodeToString(md5ByteArray[:])
 	mcKey := "total-items-count-" + category + "-" + region + "-" + searchHash
 
-	mc := store.GetMemcacheConnection()
-	mcItem, err := mc.Get(mcKey)
+	mcItem, err := store.GetMemcacheItem(mcKey)
 
-	if err == memcache.ErrCacheMiss || true {
+	if err == memcache.ErrCacheMiss {
 
 		query := squirrel.Select("count(id) as count").From("items")
 		query = filter(query, search, category, region)
@@ -120,7 +119,7 @@ func getPageLimit(search string, category string, region string) (ret int, err e
 		err := store.QueryRow(query).Scan(&count)
 		ret := math.Ceil(float64(count) / float64(perPage))
 
-		mc.Set(&memcache.Item{Key: mcKey, Value: float64bytes(ret)})
+		store.SetMemcacheItem(mcKey, float64bytes(ret))
 		return int(ret), err
 
 	} else if err != nil {
@@ -148,7 +147,7 @@ func float64bytes(float float64) []byte {
 
 func filter(query squirrel.SelectBuilder, search string, category string, region string) squirrel.SelectBuilder {
 
-	query = query.Where("type = ?", "scrape")
+	//query = query.Where("type = ?", "scrape")
 
 	if search != "" {
 		query = query.Where("name LIKE ?", "%"+search+"%")

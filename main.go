@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	amaz "github.com/Jleagle/canihave/amazon"
+	"github.com/Jleagle/canihave/environment"
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/scraper"
@@ -31,6 +32,7 @@ func main() {
 
 	location.SetRegions()
 	amaz.SetRateLimit()
+	environment.SetEnv()
 
 	scrape := flag.Bool("scrape", false, "Grab new items from websites")
 	social := flag.Bool("social", false, "Add items to social media")

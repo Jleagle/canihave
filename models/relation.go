@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -92,19 +91,16 @@ func (i Item) GetSimilar() (items []Item) {
 	rows := store.Query(builder)
 	defer rows.Close()
 
+	ids := []string{}
 	for rows.Next() {
 
-		item := Item{}
-
-		err := rows.Scan(&item.ID)
+		var id string
+		err := rows.Scan(&id)
 		if err != nil {
-			fmt.Println(err)
+			logger.Err("Can't ")
 		}
-
-		item.Get()
-
-		items = append(items, item)
+		ids = append(ids, id)
 	}
 
-	return items
+	return GetMulti(ids, i.Region)
 }
