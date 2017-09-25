@@ -79,7 +79,14 @@ func getResults(search string, category string, region string, page int) []model
 
 	offset := uint64((page - 1) * perPage)
 
-	query := squirrel.Select("*").From("items").OrderBy("region = '" + region + "' DESC, dateUpdated DESC").Limit(uint64(perPage)).Offset(offset)
+	query := squirrel.Select("*").From("items").Limit(uint64(perPage)).Offset(offset)
+
+	if search != "" {
+		query = query.OrderBy("salesRank ASC")
+	} else {
+		query = query.OrderBy("region = '" + region + "' DESC, dateUpdated DESC")
+	}
+
 	query = filter(query, search, category, region)
 
 	rows := store.Query(query)
@@ -144,7 +151,7 @@ func float64bytes(float float64) []byte {
 
 func filter(query squirrel.SelectBuilder, search string, category string, region string) squirrel.SelectBuilder {
 
-	//query = query.Where("type = ?", "scrape")
+	query = query.Where("type = ?", models.TYPE_SCRAPE)
 
 	if search != "" {
 		query = query.Where("name LIKE ?", "%"+search+"%")

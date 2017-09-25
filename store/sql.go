@@ -73,7 +73,7 @@ func Insert(builder squirrel.InsertBuilder) (err error) {
 		logger.Err("Can't make insert SQL", err)
 	}
 
-	logger.Info("SQL: " + rawSQL)
+	//logger.Info("SQL: " + rawSQL)
 
 	prep := getPrepareStatement(rawSQL)
 
@@ -89,7 +89,7 @@ func Update(builder squirrel.UpdateBuilder) (err error) {
 		logger.Err("Can't make update SQL", err)
 	}
 
-	logger.Info("SQL: " + rawSQL)
+	//logger.Info("SQL: " + rawSQL)
 
 	prep := getPrepareStatement(rawSQL)
 
@@ -105,7 +105,7 @@ func Query(builder squirrel.SelectBuilder) (rows *sql.Rows) {
 		logger.Err("Can't make query SQL", err)
 	}
 
-	logger.Info("SQL: " + rawSQL)
+	//logger.Info("SQL: " + rawSQL)
 
 	prep := getPrepareStatement(rawSQL)
 
@@ -124,7 +124,7 @@ func QueryRow(builder squirrel.SelectBuilder) *sql.Row {
 		logger.Err("Can't make query SQL", err)
 	}
 
-	logger.Info("SQL: " + rawSQL)
+	//logger.Info("SQL: " + rawSQL)
 
 	prep := getPrepareStatement(rawSQL)
 

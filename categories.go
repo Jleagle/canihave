@@ -5,6 +5,7 @@ import (
 
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/logger"
+	"github.com/Jleagle/canihave/models"
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
 )
@@ -13,7 +14,7 @@ func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 
 	location.DetectLanguageChange(w, r)
 
-	builder := squirrel.Select("nodeName AS category, count(nodeName) AS count").From("items").GroupBy("nodeName").OrderBy("count DESC").Where("type = ?", "scrape")
+	builder := squirrel.Select("nodeName AS category, count(nodeName) AS count").From("items").GroupBy("nodeName").OrderBy("count DESC").Where("type = ?", models.TYPE_SCRAPE)
 	rows := store.Query(builder)
 	defer rows.Close()
 

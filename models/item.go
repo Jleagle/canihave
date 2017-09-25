@@ -278,8 +278,8 @@ func saveToMysql(i Item) (success bool, err error) {
 
 	err = store.Insert(builder)
 	if sqlerr, ok := err.(*mysql.MySQLError); ok {
-		if sqlerr.Number == mysqlerr.ER_DUP_ENTRY { // Duplicate entry
-			logger.Info("Trying to insert dupe entry", err)
+		if sqlerr.Number == mysqlerr.ER_DUP_ENTRY {
+			//logger.Info("Trying to insert dupe entry", err)
 			return true, nil
 		}
 	}
