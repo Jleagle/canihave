@@ -32,7 +32,7 @@ func log(level logging.Severity, message string, err ...error) {
 		message = message + ": " + err[0].Error()
 	}
 
-	if environment.IsLive() {
+	if environment.IsLive() && false {
 
 		ctx := context.Background()
 		c, err := logging.NewClient(ctx, PROJECT_ID)
@@ -45,17 +45,15 @@ func log(level logging.Severity, message string, err ...error) {
 			Payload:  message,
 		})
 
-		go send(c)
+		go func() {
+			err := c.Close()
+			if err != nil {
+				fmt.Println("Error sending logs to Google")
+			}
+		}()
+
 	} else {
 
 		fmt.Println(message)
-	}
-}
-
-func send(c *logging.Client) {
-
-	err := c.Close()
-	if err != nil {
-		fmt.Println("Error sending logs to Google")
 	}
 }
