@@ -1,7 +1,6 @@
 package scraper
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,32 +10,32 @@ import (
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/models"
+	"github.com/Jleagle/canihave/social"
 )
 
 const (
-	MANUAL string = "manual"
-
-	ShitYouCanAfford string = "shityoucanafford"
-	WannaSpend       string = "wannaspend"
-	DatTwenty        string = "dattwenty"
-	Canopy           string = "canopy"
-	FiveStar         string = "fivestar"
-	BoughtItOnce     string = "boughtitonce"
+	SOURCE_Manual           string = "manual"
+	SOURCE_ShitYouCanAfford string = "shityoucanafford"
+	SOURCE_WannaSpend       string = "wannaspend"
+	SOURCE_DatTwenty        string = "dattwenty"
+	SOURCE_Canopy           string = "canopy"
+	SOURCE_FiveStar         string = "fivestar"
+	SOURCE_BoughtItOnce     string = "boughtitonce"
 )
 
 func ScrapeHandler(social bool) {
 
 	// todo, get all items and pass them in so not to add them
 
-	getSingle(social, ShitYouCanAfford, "http://shityoucanafford.com/")
-	getSingle(social, DatTwenty, "http://dattwenty.com/pages/home")
-	getSingle(social, WannaSpend, "http://www.wannaspend.com/")
-	getSingle(social, Canopy, "https://canopy.co/ajax/merged_feed_products?limit=100")
-	getSingle(social, FiveStar, "https://fivestar.io/index-3b0dc4e7b4c5c55e5da4.js")
-	getSingle(social, BoughtItOnce, "http://boughtitonce.com/")
+	getSingle(social, SOURCE_ShitYouCanAfford, "http://shityoucanafford.com/")
+	getSingle(social, SOURCE_DatTwenty, "http://dattwenty.com/pages/home")
+	getSingle(social, SOURCE_WannaSpend, "http://www.wannaspend.com/")
+	getSingle(social, SOURCE_Canopy, "https://canopy.co/ajax/merged_feed_products?limit=100")
+	getSingle(social, SOURCE_FiveStar, "https://fivestar.io/index-3b0dc4e7b4c5c55e5da4.js")
+	getSingle(social, SOURCE_BoughtItOnce, "http://boughtitonce.com/")
 }
 
-func getSingle(social bool, source string, url string) {
+func getSingle(postToSocial bool, source string, url string) {
 
 	body, code := doCurl(url)
 	if code == 200 {
@@ -47,25 +46,21 @@ func getSingle(social bool, source string, url string) {
 		links = helpers.RemoveDuplicatesUnordered(links)
 		links = helpers.ArrayReverse(links)
 
-		item := models.Item{}
 		for _, link := range links {
 
 			m := r.FindStringSubmatch(link)
-			fmt.Printf("%v", m)
 
-			item.Region = location.TLDToRegion(m[2])
-			item.ID = m[4]
-			item.Source = source
-			item.Type = models.TYPE_SCRAPE
-			item.GetWithExtras()
-
-			if item.Region == "" {
-				logger.Err("Item has no region when being scraped")
+			item, err := models.GetWithExtras(m[4], location.TLDToRegion(m[2]), models.TYPE_SCRAPE, source)
+			if err != nil {
+				logger.Err("Can't get with extras", err)
+				continue
 			}
+
+			social.PostToTwitter(item)
 		}
 
 	} else {
-		fmt.Printf("%# v", source+" seems to be down")
+		logger.Info(source + " seems to be down")
 	}
 }
 

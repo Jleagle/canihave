@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/models"
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
@@ -19,15 +19,15 @@ func siteMapHandler(w http.ResponseWriter, r *http.Request) {
 	sm.SetCompress(true)
 	sm.Create()
 
-	query := squirrel.Select("*").From("items").OrderBy("dateCreated DESC").Limit(1000)
+	query := squirrel.Select("*").From("items").OrderBy("type = '" + models.TYPE_SCRAPE + "' DESC, dateCreated DESC").Limit(1000)
 	rows := store.Query(query)
 	defer rows.Close()
 
 	i := models.Item{}
 	for rows.Next() {
-		err := rows.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Status, &i.Type, &i.CompanyName)
+		err := rows.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Type, &i.CompanyName)
 		if err != nil {
-			fmt.Println(err)
+			logger.Err("Can't scan site map result", err)
 		}
 
 		sm.Add(stm.URL{

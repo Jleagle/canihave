@@ -1,12 +1,12 @@
 package location
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"strings"
 
+	"github.com/Jleagle/canihave/logger"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
 	"github.com/oschwald/geoip2-golang"
 )
@@ -76,7 +76,7 @@ func getISO(r *http.Request) string {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Geo Lite Lookup: %v - %v", ip, record.Country.IsoCode)
+	logger.Err("Geo Lite Lookup: "+string(ip)+" - "+record.Country.IsoCode, err)
 	return record.Country.IsoCode
 }
 

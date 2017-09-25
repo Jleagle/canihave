@@ -17,8 +17,6 @@ import (
 
 var RateLimit <-chan time.Time
 
-var retries int = 0
-
 func SetRateLimit() {
 
 	RateLimit = time.Tick(time.Millisecond * 1000) // Amazon has 1 request per second limit
@@ -35,7 +33,7 @@ func getAmazonClient(region string) (client *amazon.Client) {
 		amazon.Region(region),
 	)
 	if err != nil {
-		logger.Err("Can't create Amazon client: " + err.Error())
+		logger.Err("Can't create Amazon client", err)
 	}
 
 	return client
@@ -104,12 +102,12 @@ func GetItemDetailsBulk(ids []string, region string) (ret []amazon.Item) {
 			r := regexp.MustCompile(`Value: ([A-Z0-9]{10}) is not`)
 			links := r.FindAllString(err.Error(), 1)
 
-			logger.Err("One item in a batch failed: " + links[1])
+			logger.Err("One item in a batch failed: "+links[1], err)
 
 		} else if err != nil {
 
 			// Fail
-			logger.Err("Can't get amazon items: " + err.Error())
+			logger.Err("Can't get amazon items", err)
 		} else {
 
 			// Success

@@ -2,7 +2,6 @@ package models
 
 import (
 	"log"
-	"strconv"
 	"strings"
 	"time"
 
@@ -20,7 +19,7 @@ type Relation struct {
 	Type        string
 }
 
-func findSimilar(id string, region string) {
+func saveSimilarItems(id string, region string, itemType string) {
 
 	similar, err := amaz.GetSimilarItems(id, region)
 
@@ -32,30 +31,10 @@ func findSimilar(id string, region string) {
 
 	for _, amazonItem := range similar.Items.Item {
 
-		// Save item
-		var price int = 0
-		if amazonItem.ItemAttributes.ListPrice.Amount != "" {
-			price, err = strconv.Atoi(amazonItem.ItemAttributes.ListPrice.Amount)
-			if err != nil {
-				log.Fatal("Error converting string to int")
-			}
-		}
+		item := amazonItemToItem(amazonItem, itemType, region)
 
-		item := Item{}
-		item.ID = amazonItem.ASIN
-		item.Name = amazonItem.ItemAttributes.Title
-		item.Link = amazonItem.DetailPageURL
-		item.SalesRank = amazonItem.SalesRank
-		item.Photo = amazonItem.LargeImage.URL
-		item.Node = "0" //todo
-		item.NodeName = amazonItem.ItemAttributes.ProductGroup
-		item.Price = price
-		item.CompanyName = amazonItem.ItemAttributes.Manufacturer
-		item.Type = TYPE_SIMILAR
-		item.Region = region
-
-		item.saveToMysql()
-		item.saveToMemcache()
+		saveToMysql(item)
+		saveToMemcache(item)
 
 		// Save the relation
 		builder := squirrel.Insert("relations")
@@ -71,23 +50,19 @@ func findSimilar(id string, region string) {
 		}
 
 		if err != nil {
-			logger.Err("Can't insert related item: " + err.Error())
+			logger.Err("Can't insert related item", err)
 		}
 	}
 }
 
-func findNodeitems(node string, region string) {
+func saveNodeitems(node string, region string) {
 
 	//nodeItems, err := amaz.GetNodeDetails(node, region)
 }
 
-func findReviews() {
+func (i Item) GetRelated(itemType string) (items []Item) {
 
-}
-
-func (i Item) GetSimilar() (items []Item) {
-
-	builder := squirrel.Select("relatedId").From("relations").Where("id = ? AND type = ?", i.ID, TYPE_SIMILAR)
+	builder := squirrel.Select("relatedId").From("relations").Where("id = ? AND type = ?", i.ID, itemType)
 	rows := store.Query(builder)
 	defer rows.Close()
 
@@ -97,10 +72,10 @@ func (i Item) GetSimilar() (items []Item) {
 		var id string
 		err := rows.Scan(&id)
 		if err != nil {
-			logger.Err("Can't ")
+			logger.Err("Can't scan related item", err)
 		}
 		ids = append(ids, id)
 	}
 
-	return GetMulti(ids, i.Region)
+	return GetMulti(ids, i.Region, itemType)
 }

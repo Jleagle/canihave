@@ -30,10 +30,12 @@ const (
 
 func main() {
 
+	// Setup
 	location.SetRegions()
 	amaz.SetRateLimit()
 	environment.SetEnv()
 
+	// CLI
 	scrape := flag.Bool("scrape", false, "Grab new items from websites")
 	social := flag.Bool("social", false, "Add items to social media")
 	flag.Parse()
@@ -42,10 +44,8 @@ func main() {
 		return
 	}
 
-	//scraper.ScrapeHandler(*social)
-
+	// Routes
 	r := chi.NewRouter()
-
 	r.Get("/", searchHandler)
 	r.Post("/", searchHandler)
 	r.Get("/info", infoHandler)
@@ -54,10 +54,12 @@ func main() {
 	r.Get("/{id}", itemHandler)
 	r.Get("/{id}/{slug}", itemHandler)
 
+	// Assets
 	workDir, _ := os.Getwd()
 	filesDir := filepath.Join(workDir, "assets")
 	fileServer(r, "/assets", http.Dir(filesDir))
 
+	// Serve
 	log.Fatal(http.ListenAndServe(":8083", r))
 }
 

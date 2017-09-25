@@ -32,7 +32,7 @@ func GetMysqlConnection() *sql.DB {
 		var err error
 		mysqlConnection, err = sql.Open("mysql", dsn)
 		if err != nil {
-			logger.Err("Can not connect to MySQL: " + err.Error())
+			logger.Err("Can not connect to MySQL", err)
 		}
 	}
 
@@ -59,7 +59,7 @@ func getPrepareStatement(query string) (statement *sql.Stmt) {
 	var err error
 	statement, err = conn.Prepare(query)
 	if err != nil {
-		logger.Err("Can't run prepared statement: " + err.Error())
+		logger.Err("Can't run prepared statement", err)
 	}
 
 	mysqlPrepareStatements[hash] = statement
@@ -70,7 +70,7 @@ func Insert(builder squirrel.InsertBuilder) (err error) {
 
 	rawSQL, args, err := builder.ToSql()
 	if err != nil {
-		logger.Err("Can't make insert SQL: " + err.Error())
+		logger.Err("Can't make insert SQL", err)
 	}
 
 	logger.Info("SQL: " + rawSQL)
@@ -86,7 +86,7 @@ func Update(builder squirrel.UpdateBuilder) (err error) {
 
 	rawSQL, args, err := builder.ToSql()
 	if err != nil {
-		logger.Err("Can't make update SQL: " + err.Error())
+		logger.Err("Can't make update SQL", err)
 	}
 
 	logger.Info("SQL: " + rawSQL)
@@ -102,7 +102,7 @@ func Query(builder squirrel.SelectBuilder) (rows *sql.Rows) {
 
 	rawSQL, args, err := builder.ToSql()
 	if err != nil {
-		logger.Err("Can't make query SQL: " + err.Error())
+		logger.Err("Can't make query SQL", err)
 	}
 
 	logger.Info("SQL: " + rawSQL)
@@ -111,7 +111,7 @@ func Query(builder squirrel.SelectBuilder) (rows *sql.Rows) {
 
 	rows, err = prep.Query(args...)
 	if err != nil {
-		fmt.Println(err)
+		logger.Err("Can't query prepped statement", err)
 	}
 
 	return rows
@@ -121,7 +121,7 @@ func QueryRow(builder squirrel.SelectBuilder) *sql.Row {
 
 	rawSQL, args, err := builder.ToSql()
 	if err != nil {
-		logger.Err("Can't make query SQL: " + err.Error())
+		logger.Err("Can't make query SQL", err)
 	}
 
 	logger.Info("SQL: " + rawSQL)

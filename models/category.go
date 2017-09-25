@@ -1,9 +1,7 @@
 package models
 
 import (
-	"fmt"
-	"strconv"
-
+	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
 )
@@ -20,17 +18,9 @@ func CategoryIDFromName(name string) (id string) {
 
 	// Make the query
 	query := squirrel.Select("id").From("categories").Where(squirrel.Eq{"name": name}).Limit(1)
-	sql, args, err := query.ToSql()
+	err := store.QueryRow(query).Scan(&id)
 	if err != nil {
-		fmt.Println(err)
-	}
-
-	// Run the query
-	conn := store.GetMysqlConnection()
-
-	err = conn.QueryRow(sql, args...).Scan(&id)
-	if err != nil {
-		fmt.Printf("%v", err.Error())
+		logger.Err("Can't scan category row", err)
 	}
 
 	return id
@@ -39,33 +29,23 @@ func CategoryIDFromName(name string) (id string) {
 func CategoryNameFromID(id string) (name string) {
 
 	// Make the query
-	query := squirrel.Select("amazon").From("categories").Where(squirrel.Eq{"id": id}).Limit(1)
-	sql, args, err := query.ToSql()
+	builder := squirrel.Select("amazon").From("categories").Where(squirrel.Eq{"id": id}).Limit(1)
+	err := store.QueryRow(builder).Scan(&name)
 	if err != nil {
-		fmt.Println(err)
-	}
-
-	// Run the query
-	conn := store.GetMysqlConnection()
-
-	err = conn.QueryRow(sql, args...).Scan(&name)
-	if err != nil {
-		fmt.Printf("%v", err.Error())
+		logger.Err("Can't scan category row", err)
 	}
 
 	return name
 }
 
-func SaveCategory(name string) (id string) {
+func SaveCategory(name string) (success bool, err error) {
 
-	conn := store.GetMysqlConnection()
-
-	res, err := conn.Exec("INSERT INTO categories (amazon) VALUES (?);", name)
-	if err != nil {
-		fmt.Println(err)
+	builder := squirrel.Insert("categories").Columns("amazon").Values(name)
+	err = store.Insert(builder)
+	if err == nil {
+		return true, err
 	}
 
-	last, _ := res.LastInsertId()
-	fmt.Println(last)
-	return strconv.Itoa(int(last))
+	logger.Err("Can't insert category", err)
+	return false, err
 }

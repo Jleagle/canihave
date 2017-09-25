@@ -10,7 +10,7 @@ func RemoveDuplicatesUnordered(elements []string) []string {
 
 	// Place all keys from the map into a slice.
 	result := []string{}
-	for key, _ := range encountered {
+	for key := range encountered {
 		result = append(result, key)
 	}
 	return result
@@ -30,4 +30,13 @@ func RemFromArray(current []string, toRem string) (ret []string) {
 		}
 	}
 	return ret
+}
+
+func InArray(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }

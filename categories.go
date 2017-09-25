@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Jleagle/canihave/location"
+	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
 )
@@ -22,7 +22,7 @@ func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		err := rows.Scan(&item.Category, &item.Count)
 		if err != nil {
-			fmt.Println(err)
+			logger.Err("Can't scan category", err)
 		}
 
 		results = append(results, item)

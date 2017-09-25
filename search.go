@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/base64"
 	"encoding/binary"
-	"fmt"
 	"log"
 	"math"
 	"net/http"
@@ -35,7 +34,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	pageLimit, err := getPageLimit(search, category, region)
 	if err != nil {
-		logger.Err("Can't count all items: " + err.Error())
+		logger.Err("Can't count all items", err)
 		returnTemplate(w, "error", errorVars{HTTPCode: 503})
 		return
 	}
@@ -90,9 +89,9 @@ func getResults(search string, category string, region string, page int) []model
 	results := []models.Item{}
 	i := models.Item{}
 	for rows.Next() {
-		err := rows.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Status, &i.Type, &i.CompanyName)
+		err := rows.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Type, &i.CompanyName)
 		if err != nil {
-			fmt.Println(err)
+			logger.Err("Can't scan search result", err)
 		}
 
 		results = append(results, i)
@@ -125,11 +124,9 @@ func getPageLimit(search string, category string, region string) (ret int, err e
 	} else if err != nil {
 
 		return int(binary.BigEndian.Uint64(mcItem.Value)), err
-	} else {
-
-		logger.Err("Memcache didnt return error and it should have")
-		return 0, err
 	}
+
+	return 0, err
 }
 
 func float64frombytes(bytes []byte) float64 {

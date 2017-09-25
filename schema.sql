@@ -20,10 +20,13 @@ CREATE TABLE `items` (
   `price` int(10) unsigned NOT NULL,
   `region` varchar(4) NOT NULL DEFAULT '',
   `hits` int(10) unsigned NOT NULL DEFAULT '0',
-  `status` varchar(255) NOT NULL DEFAULT '',
   `type` varchar(255) NOT NULL DEFAULT '',
   `companyName` varchar(255) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `hits` (`hits`),
+  KEY `dateCreated` (`dateCreated`),
+  KEY `salesRank` (`salesRank`),
+  KEY `price` (`price`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `relations` (
