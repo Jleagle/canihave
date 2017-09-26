@@ -61,6 +61,7 @@ func GetItemDetails(ids []string, region string) (resp *amazon.ItemLookupRespons
 
 	if err != nil && strings.Contains(err.Error(), "RequestThrottled") {
 
+		logger.Info("Retrying amazon API call because RequestThrottled")
 		return GetItemDetails(ids, region)
 	}
 

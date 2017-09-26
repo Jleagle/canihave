@@ -244,11 +244,11 @@ func saveToMemcache(item Item) (success bool, err error) {
 func getFromMysql(id string) (i Item, err error) {
 
 	// Make the query
-	builder := squirrel.Select("*").From("items").Where(squirrel.Eq{"id": i.ID}).Limit(1)
+	builder := squirrel.Select("*").From("items").Where(squirrel.Eq{"id": id}).Limit(1)
 	row := store.QueryRow(builder)
 	err = row.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Type, &i.CompanyName)
 
-	if err.Error() == "sql: no rows in result set" {
+	if err != nil && err.Error() == "sql: no rows in result set" {
 		return i, err
 	} else if err != nil {
 		logger.Err("Can't retrieve from MySQL", err)
