@@ -19,7 +19,7 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
-var perPage int = 94
+var perPage int = 64
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -118,6 +118,7 @@ func getPageLimit(search string, category string, region string) (ret int, err e
 
 	if err == memcache.ErrCacheMiss {
 
+		// Calculate from MySQL
 		query := squirrel.Select("count(id) as count").From("items")
 		query = filter(query, search, category, region)
 
@@ -128,12 +129,14 @@ func getPageLimit(search string, category string, region string) (ret int, err e
 		store.SetMemcacheItem(mcKey, float64bytes(ret))
 		return int(ret), err
 
-	} else if err != nil {
+	} else if err == nil {
 
+		// Get from memcache
 		return int(binary.BigEndian.Uint64(mcItem.Value)), err
 	}
 
-	return 0, err
+	logger.Err("Getting page limit from memcache", err)
+	return 1, err
 }
 
 func float64frombytes(bytes []byte) float64 {

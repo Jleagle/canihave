@@ -16,3 +16,4 @@ TODO
 - make sure scraped items that exist shange their type to scraped, squirrel suppots appending
 - find a better place for search social buttons
 - dont use mysql offsets
+- remove non https content

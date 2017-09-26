@@ -1,6 +1,10 @@
 package store
 
-import "github.com/bradfitz/gomemcache/memcache"
+import (
+	"io"
+
+	"github.com/bradfitz/gomemcache/memcache"
+)
 
 var memcacheConnection *memcache.Client
 
@@ -8,16 +12,13 @@ const (
 	MEMCACHE_APP_KEY string = "canihave-"
 )
 
-func getMemcacheConnection() *memcache.Client {
-
-	if memcacheConnection == nil {
-		memcacheConnection = memcache.New("127.0.0.1:11211")
-	}
-	return memcacheConnection
-}
-
 func GetMemcacheItem(key string) (item *memcache.Item, err error) {
-	return getMemcacheConnection().Get(MEMCACHE_APP_KEY + key)
+	item, err = getMemcacheConnection().Get(MEMCACHE_APP_KEY + key)
+	if err == io.EOF {
+		resetMemcacheConnection()
+		return GetMemcacheItem(key)
+	}
+	return item, err
 }
 
 func GetMemcacheMulti(keys []string) (items map[string]*memcache.Item, err error) {
@@ -34,4 +35,16 @@ func SetMemcacheItem(key string, value []byte) (err error) {
 
 func DeleteMemcacheItem(key string) (err error) {
 	return getMemcacheConnection().Delete(MEMCACHE_APP_KEY + key)
+}
+
+func getMemcacheConnection() *memcache.Client {
+
+	if memcacheConnection == nil {
+		memcacheConnection = memcache.New("127.0.0.1:11211")
+	}
+	return memcacheConnection
+}
+
+func resetMemcacheConnection() {
+	memcacheConnection = nil
 }
