@@ -17,6 +17,6 @@ TODO
 - find a better place for search social buttons
 - dont use mysql offsets
 - add region to item primary key as it will have different salesrank etc
-- check items come from memcache and sql if needed
+- check if facebook token will expire
 
 "Error: write tcp [::1]:8083->[::1]:49436: write: broken pipe" - amazon/amazon.go:60
