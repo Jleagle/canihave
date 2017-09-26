@@ -16,6 +16,8 @@ import (
 
 func itemHandler(w http.ResponseWriter, r *http.Request) {
 
+	location.DetectLanguageChange(w, r)
+
 	id := chi.URLParam(r, "id")
 
 	// Validate item ID

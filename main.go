@@ -53,6 +53,9 @@ func main() {
 	r.Get("/categories", categoriesHandler)
 	r.Get("/{id}", itemHandler)
 	r.Get("/{id}/{slug}", itemHandler)
+	r.MethodFunc(http.MethodGet, "/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/assets/icons/favicon-64.png", 301)
+	})
 
 	// Assets
 	workDir, _ := os.Getwd()

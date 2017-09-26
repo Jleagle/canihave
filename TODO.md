@@ -16,4 +16,7 @@ TODO
 - make sure scraped items that exist shange their type to scraped, squirrel suppots appending
 - find a better place for search social buttons
 - dont use mysql offsets
-- remove non https content
+- add region to item primary key as it will have different salesrank etc
+- check items come from memcache and sql if needed
+
+"Error: write tcp [::1]:8083->[::1]:49436: write: broken pipe" - amazon/amazon.go:60
