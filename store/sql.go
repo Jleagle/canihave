@@ -15,55 +15,37 @@ var mysqlConnection *sql.DB
 
 var mysqlPrepareStatements map[string]*sql.Stmt
 
-func GetMysqlConnection() *sql.DB {
+func Query(builder squirrel.SelectBuilder) (rows *sql.Rows) {
 
-	if mysqlConnection == nil {
-
-		database := os.Getenv("CANIHAVE_SQL_DB")
-		username := os.Getenv("CANIHAVE_SQL_USERNAME")
-		password := os.Getenv("CANIHAVE_SQL_PW")
-		if len(password) > 0 {
-			password = ":" + password
-		}
-
-		dsn := fmt.Sprintf("%s%s@tcp(%s:%s)/%s",
-			username, password, "127.0.0.1", "3306", database)
-
-		var err error
-		mysqlConnection, err = sql.Open("mysql", dsn)
-		if err != nil {
-			logger.Err("Can not connect to MySQL", err)
-		}
+	rawSQL, args, err := builder.ToSql()
+	if err != nil {
+		logger.Err("Can't make query SQL", err)
 	}
 
-	return mysqlConnection
+	//logger.Info("SQL: " + rawSQL)
+
+	prep := getPrepareStatement(rawSQL)
+
+	rows, err = prep.Query(args...)
+	if err != nil {
+		logger.Err("Can't query prepped statement", err)
+	}
+
+	return rows
 }
 
-func getPrepareStatement(query string) (statement *sql.Stmt) {
+func QueryRow(builder squirrel.SelectBuilder) *sql.Row {
 
-	if mysqlPrepareStatements == nil {
-		mysqlPrepareStatements = make(map[string]*sql.Stmt)
-	}
-
-	byteArray := md5.Sum([]byte(query))
-	hash := hex.EncodeToString(byteArray[:])
-
-	if val, ok := mysqlPrepareStatements[hash]; ok {
-		if ok {
-			return val
-		}
-	}
-
-	conn := GetMysqlConnection()
-
-	var err error
-	statement, err = conn.Prepare(query)
+	rawSQL, args, err := builder.ToSql()
 	if err != nil {
-		logger.Err("Can't run prepared statement", err)
+		logger.Err("Can't make query SQL", err)
 	}
 
-	mysqlPrepareStatements[hash] = statement
-	return statement
+	//logger.Info("SQL: " + rawSQL)
+
+	prep := getPrepareStatement(rawSQL)
+
+	return prep.QueryRow(args...)
 }
 
 func Insert(builder squirrel.InsertBuilder) (err error) {
@@ -98,35 +80,53 @@ func Update(builder squirrel.UpdateBuilder) (err error) {
 	return err
 }
 
-func Query(builder squirrel.SelectBuilder) (rows *sql.Rows) {
+func getPrepareStatement(query string) (statement *sql.Stmt) {
 
-	rawSQL, args, err := builder.ToSql()
-	if err != nil {
-		logger.Err("Can't make query SQL", err)
+	if mysqlPrepareStatements == nil {
+		mysqlPrepareStatements = make(map[string]*sql.Stmt)
 	}
 
-	//logger.Info("SQL: " + rawSQL)
+	byteArray := md5.Sum([]byte(query))
+	hash := hex.EncodeToString(byteArray[:])
 
-	prep := getPrepareStatement(rawSQL)
-
-	rows, err = prep.Query(args...)
-	if err != nil {
-		logger.Err("Can't query prepped statement", err)
+	if val, ok := mysqlPrepareStatements[hash]; ok {
+		if ok {
+			return val
+		}
 	}
 
-	return rows
+	conn := getMysqlConnection()
+
+	var err error
+	statement, err = conn.Prepare(query)
+	if err != nil {
+		logger.Err("Can't run prepared statement", err)
+	}
+
+	mysqlPrepareStatements[hash] = statement
+	return statement
 }
 
-func QueryRow(builder squirrel.SelectBuilder) *sql.Row {
+func getMysqlConnection() *sql.DB {
 
-	rawSQL, args, err := builder.ToSql()
-	if err != nil {
-		logger.Err("Can't make query SQL", err)
+	if mysqlConnection == nil {
+
+		database := os.Getenv("CANIHAVE_SQL_DB")
+		username := os.Getenv("CANIHAVE_SQL_USERNAME")
+		password := os.Getenv("CANIHAVE_SQL_PW")
+		if len(password) > 0 {
+			password = ":" + password
+		}
+
+		dsn := fmt.Sprintf("%s%s@tcp(%s:%s)/%s",
+			username, password, "127.0.0.1", "3306", database)
+
+		var err error
+		mysqlConnection, err = sql.Open("mysql", dsn)
+		if err != nil {
+			logger.Err("Can not connect to MySQL", err)
+		}
 	}
 
-	//logger.Info("SQL: " + rawSQL)
-
-	prep := getPrepareStatement(rawSQL)
-
-	return prep.QueryRow(args...)
+	return mysqlConnection
 }

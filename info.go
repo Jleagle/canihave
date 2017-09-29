@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/Jleagle/canihave/links"
 	"github.com/Jleagle/canihave/location"
 )
 
@@ -15,16 +16,12 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Flag = location.GetAmazonRegion(w, r)
 	vars.Flags = location.GetRegions()
 	vars.Path = r.URL.Path
-	vars.WebPage = PAGE_INFO
+	vars.Links = links.GetHeaderLinks(r)
 
 	returnTemplate(w, "info", vars)
 	return
 }
 
 type infoVars struct {
-	WebPage    string
-	Path       string
-	Javascript []string
-	Flag       string
-	Flags      map[string]string
+	commonTemplateVars
 }

@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/Jleagle/canihave/bots"
+	"github.com/Jleagle/canihave/links"
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/models"
@@ -47,8 +48,8 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Flag = location.GetAmazonRegion(w, r)
 	vars.Flags = location.GetRegions()
 	vars.Path = r.URL.Path
-	vars.WebPage = PAGE_ITEM
 	vars.Similar = item.GetRelated(models.TYPE_SIMILAR)
+	vars.Links = links.GetHeaderLinks(r)
 
 	returnTemplate(w, "item", vars)
 	return
@@ -66,11 +67,7 @@ func incrementHits(id string) (success bool, err error) {
 }
 
 type itemVars struct {
-	Item       models.Item
-	Javascript []string
-	WebPage    string
-	Flag       string
-	Flags      map[string]string
-	Path       string
-	Similar    []models.Item
+	commonTemplateVars
+	Item    models.Item
+	Similar []models.Item
 }

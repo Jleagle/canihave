@@ -7,8 +7,13 @@ import (
 )
 
 type Category struct {
-	ID         int
-	AmazonName string
+	ID       string
+	Category string
+	Count    string
+}
+
+func (c Category) GetLink() (link string) {
+	return "/?category=" + c.ID
 }
 
 //todo, make a struct and add these methods as listeners

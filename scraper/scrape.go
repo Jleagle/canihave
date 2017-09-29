@@ -10,6 +10,7 @@ import (
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/models"
+	"github.com/Jleagle/canihave/social"
 )
 
 const (
@@ -49,14 +50,17 @@ func getSingle(postToSocial bool, source string, url string) {
 
 			m := r.FindStringSubmatch(link)
 
-			_, err := models.GetWithExtras(m[4], location.TLDToRegion(m[2]), models.TYPE_SCRAPE, source)
+			item, err := models.GetWithExtras(m[4], location.TLDToRegion(m[2]), models.TYPE_SCRAPE, source)
 			if err != nil {
 				logger.Err("Can't get with extras", err)
 				continue
 			}
 
-			//social.PostToTwitter(item)
-			//social.PostToFacebook(item)
+			logger.Info("Adding " + item.ID)
+			if false {
+				social.PostToTwitter(item)
+				social.PostToFacebook(item)
+			}
 		}
 
 	} else {

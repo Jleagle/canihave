@@ -7,7 +7,7 @@
 {{ range .Items }}
 
 <div>
-    <a href="/?category=todo">{{.Category}} ({{.Count}})</a>
+    <a href="{{.GetLink}}">{{.Category}} ({{.Count}})</a>
 </div>
 
 {{ end }}

@@ -11,6 +11,8 @@ import (
 	"github.com/huandu/facebook"
 )
 
+// todo, post to reddit user, instagram
+
 func PostToTwitter(item models.Item) {
 
 	if environment.IsLive() {

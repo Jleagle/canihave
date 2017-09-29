@@ -17,26 +17,34 @@ import (
 
 var RateLimit <-chan time.Time
 
+var amazonConnection *amazon.Client
+
 func SetRateLimit() {
 
-	RateLimit = time.Tick(time.Millisecond * 1000) // Amazon has 1 request per second limit
+	// Amazon has 1 request per second limit
+	RateLimit = time.Tick(time.Millisecond * 1000)
 }
 
-func getAmazonClient(region string) (client *amazon.Client) {
+func getAmazonClient(region string) (*amazon.Client, error) {
 
 	<-RateLimit
 
-	client, err := amazon.New(
-		os.Getenv("CANIHAVE_AWS_ACCESS_KEY_ID"),
-		os.Getenv("CANIHAVE_AWS_SECRET_ACCESS_KEY"),
-		location.GetAmazonTag(region),
-		amazon.Region(region),
-	)
-	if err != nil {
-		logger.Err("Can't create Amazon client", err)
+	var err error
+
+	if amazonConnection == nil {
+
+		amazonConnection, err = amazon.New(
+			os.Getenv("CANIHAVE_AWS_ACCESS_KEY_ID"),
+			os.Getenv("CANIHAVE_AWS_SECRET_ACCESS_KEY"),
+			location.GetAmazonTag(region),
+			amazon.Region(region),
+		)
+		if err != nil {
+			logger.Err("Can't create Amazon client", err)
+		}
 	}
 
-	return client
+	return amazonConnection, err
 }
 
 func GetItemDetails(ids []string, region string) (resp *amazon.ItemLookupResponse, err error) {
@@ -47,7 +55,10 @@ func GetItemDetails(ids []string, region string) (resp *amazon.ItemLookupRespons
 		return nil, errors.New("you can only query 10 items at a time")
 	}
 
-	client := getAmazonClient(region)
+	client, err := getAmazonClient(region)
+	if err != nil {
+		return nil, err
+	}
 
 	resp, err = client.ItemLookup(amazon.ItemLookupParameters{
 		ResponseGroups: []amazon.ItemLookupResponseGroup{
@@ -123,7 +134,10 @@ func GetItemDetailsBulk(ids []string, region string) (ret []amazon.Item) {
 
 func GetSimilarItems(id string, region string) (resp *amazon.SimilarityLookupResponse, err error) {
 
-	client := getAmazonClient(region)
+	client, err := getAmazonClient(region)
+	if err != nil {
+		return nil, err
+	}
 
 	resp, err = client.SimilarityLookup(amazon.SimilarityLookupParameters{
 		ResponseGroups: []amazon.SimilarityLookupResponseGroup{
@@ -140,9 +154,12 @@ func GetSimilarItems(id string, region string) (resp *amazon.SimilarityLookupRes
 	return resp, err
 }
 
-func GetNodeDetails(node string, region string) {
+func GetNodeDetails(node string, region string) (nil, err error) {
 
-	client := getAmazonClient(region)
+	client, err := getAmazonClient(region)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := client.BrowseNodeLookup(amazon.BrowseNodeLookupParameters{
 		ResponseGroups: []amazon.BrowseNodeLookupResponseGroup{
@@ -161,11 +178,15 @@ func GetNodeDetails(node string, region string) {
 
 	browseNode := res.BrowseNodes()[0]
 	fmt.Printf("%v: %v\n", browseNode.ID, browseNode.Name)
+	return nil, err
 }
 
-func Search(search string, region string) {
+func Search(search string, region string) (nil, err error) {
 
-	client := getAmazonClient(region)
+	client, err := getAmazonClient(region)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := client.ItemSearch(amazon.ItemSearchParameters{
 		SearchIndex: amazon.SearchIndexAll,
@@ -180,4 +201,5 @@ func Search(search string, region string) {
 	}
 
 	fmt.Printf("%d results found\n\n", res.Items.TotalResults)
+	return nil, err
 }

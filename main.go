@@ -21,13 +21,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const (
-	PAGE_SEARCH     string = "search"
-	PAGE_CATEGORIES string = "cats"
-	PAGE_INFO       string = "info"
-	PAGE_ITEM       string = "item"
-)
-
 func main() {
 
 	// Setup
@@ -90,6 +83,14 @@ func returnTemplate(w http.ResponseWriter, page string, pageData interface{}) {
 	}
 }
 
+type commonTemplateVars struct {
+	Links      map[string]string
+	Flag       string
+	Flags      map[string]string
+	Path       string
+	Javascript []string
+}
+
 func getTemplateFuncMap() map[string]interface{} {
 	return template.FuncMap{
 		"avail": func(name string, data interface{}) bool {
@@ -105,6 +106,9 @@ func getTemplateFuncMap() map[string]interface{} {
 		"inc": func(i int) int { return i + 1 },
 		"dec": func(i int) int { return i - 1 },
 		"cmp": func(i interface{}, j interface{}) bool { return i == j },
+		"startsWith": func(string string, prefix string) bool {
+			return strings.HasPrefix(string, prefix)
+		},
 	}
 }
 

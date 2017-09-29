@@ -1,16 +1,16 @@
 package main
 
 import (
+	"crypto/md5"
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/hex"
 	"log"
 	"math"
 	"net/http"
 	"strconv"
 
-	"crypto/md5"
-	"encoding/hex"
-
+	"github.com/Jleagle/canihave/links"
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/models"
@@ -70,7 +70,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Page = pageInt
 	vars.PageLimit = pageLimit
 	vars.Path = r.URL.Path
-	vars.WebPage = PAGE_SEARCH
+	vars.Links = links.GetHeaderLinks(r)
 
 	returnTemplate(w, "search", vars)
 }
@@ -84,7 +84,7 @@ func getResults(search string, category string, region string, page int) []model
 	if search != "" {
 		query = query.OrderBy("salesRank ASC")
 	} else {
-		query = query.OrderBy("region = '" + region + "' DESC, dateUpdated DESC")
+		query = query.OrderBy("region = '" + region + "' DESC, dateCreated DESC")
 	}
 
 	query = filter(query, search, category, region)
@@ -168,15 +168,11 @@ func filter(query squirrel.SelectBuilder, search string, category string, region
 }
 
 type searchVars struct {
-	Path       string
-	Items      []models.Item
-	Page       int
-	PageLimit  int
-	Category   string
-	Search     string
-	Search64   string
-	Javascript []string
-	Flag       string
-	Flags      map[string]string
-	WebPage    string
+	commonTemplateVars
+	Items     []models.Item
+	Page      int
+	PageLimit int
+	Category  string
+	Search    string
+	Search64  string
 }

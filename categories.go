@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/Jleagle/canihave/links"
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/models"
@@ -18,8 +19,8 @@ func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 	rows := store.Query(builder)
 	defer rows.Close()
 
-	results := []category{}
-	item := category{}
+	results := []models.Category{}
+	item := models.Category{}
 	for rows.Next() {
 		err := rows.Scan(&item.Category, &item.Count)
 		if err != nil {
@@ -34,22 +35,12 @@ func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Flags = location.GetRegions()
 	vars.Items = results
 	vars.Path = r.URL.Path
-	vars.WebPage = PAGE_CATEGORIES
+	vars.Links = links.GetHeaderLinks(r)
 
 	returnTemplate(w, "categories", vars)
 }
 
-type category struct {
-	Category string
-	Count    string
-}
-
 type categoriesVars struct {
-	Path    string
-	Name    string
-	Size    int
-	Flag    string
-	Flags   map[string]string
-	Items   []category
-	WebPage string
+	commonTemplateVars
+	Items []models.Category
 }

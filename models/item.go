@@ -152,7 +152,7 @@ func GetMulti(ids []string, region string, itemType string) (items []Item) {
 	for rows.Next() {
 		i := Item{}
 		err := rows.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Type, &i.CompanyName)
-		if err.Error() == "sql: no rows in result set" {
+		if err != nil && err.Error() == "sql: no rows in result set" {
 			// No problem
 		} else if err != nil {
 			logger.Err("Can't scan item", err)
