@@ -30,7 +30,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	region := location.GetAmazonRegion(w, r)
 	search := params.Get("search")
-	category := params.Get("cat")
+	category := params.Get("category")
 
 	pageLimit, err := getPageLimit(search, category, region)
 	if err != nil {
@@ -71,6 +71,10 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	vars.PageLimit = pageLimit
 	vars.Path = r.URL.Path
 	vars.Links = links.GetHeaderLinks(r)
+
+	// Hidden search form
+	vars.Category = category
+	vars.Sort = params.Get("sort")
 
 	returnTemplate(w, "search", vars)
 }
@@ -161,7 +165,7 @@ func filter(query squirrel.SelectBuilder, search string, category string, region
 	}
 
 	if category != "" {
-		query = query.Where("cat = ?", category)
+		//query = query.Where("cat = ?", category) // todo
 	}
 
 	return query

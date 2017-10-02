@@ -29,12 +29,12 @@
 
 </div>
 
-{{if (avail "Search" .)}}{{if .Search}}
+{{if ne .Search ""}}
 <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="/">Reset</a></li>
     <li class="breadcrumb-item active">Showing items that match "{{.Search}}"</li>
 </ol>
-{{end}}{{end}}
+{{end}}
 
 {{if .Items}}
 

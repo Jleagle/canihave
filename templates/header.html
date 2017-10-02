@@ -12,10 +12,10 @@
 
     <title>Canihave.one</title>
 
-    <link rel="icon" type="image/png" href="/assets/icons/favicon-16.png" sizes="16x16" />
-    <link rel="icon" type="image/png" href="/assets/icons/favicon-32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="/assets/icons/favicon-64.png" sizes="64x64" />
-    <link rel="icon" type="image/png" href="/assets/icons/favicon-128.png" sizes="128x128" />
+    <link rel="icon" type="image/png" href="/assets/icons/favicon-16.png" sizes="16x16"/>
+    <link rel="icon" type="image/png" href="/assets/icons/favicon-32.png" sizes="32x32"/>
+    <link rel="icon" type="image/png" href="/assets/icons/favicon-64.png" sizes="64x64"/>
+    <link rel="icon" type="image/png" href="/assets/icons/favicon-128.png" sizes="128x128"/>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -84,15 +84,21 @@
                 </li>
             </ul>
 
-            <form class="form-inline my-2 my-lg-0" action="/?page=2&sort=date">
-                {{if and (avail "Category" .) .Category}}
-                <input type="hidden" name="cat" value="{{.Category}}">
+            <form class="form-inline my-2 my-lg-0" action="/">
+                {{if ne .Category ""}}
+                <input type="hidden" name="category" value="{{.Category}}">
                 {{end}}
-                {{if (avail "Search" .)}}
-                <input class="form-control mr-sm-2" placeholder="Search" name="search" value="{{.Search}}" required>
-                {{else}}
+
+                {{if ne .Sort ""}}
+                <input type="hidden" name="sort" value="{{.Sort}}">
+                {{end}}
+
+                {{if eq .Search ""}}
                 <input class="form-control mr-sm-2" placeholder="Search" name="search" required>
+                {{else}}
+                <input class="form-control mr-sm-2" placeholder="Search" name="search" value="{{.Search}}" required>
                 {{end}}
+
                 <button class="btn btn-outline-success my-2 my-sm-0">Search</button>
             </form>
 

@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
 	"runtime"
 	"strings"
 
@@ -89,20 +88,15 @@ type commonTemplateVars struct {
 	Flags      map[string]string
 	Path       string
 	Javascript []string
+
+	// For hidden search form fields
+	Category string
+	Search   string
+	Sort     string
 }
 
 func getTemplateFuncMap() map[string]interface{} {
 	return template.FuncMap{
-		"avail": func(name string, data interface{}) bool {
-			v := reflect.ValueOf(data)
-			if v.Kind() == reflect.Ptr {
-				v = v.Elem()
-			}
-			if v.Kind() != reflect.Struct {
-				return false
-			}
-			return v.FieldByName(name).IsValid()
-		},
 		"inc": func(i int) int { return i + 1 },
 		"dec": func(i int) int { return i - 1 },
 		"cmp": func(i interface{}, j interface{}) bool { return i == j },
