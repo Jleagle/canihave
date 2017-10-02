@@ -263,6 +263,11 @@
 			"Rev": "8c160ca1523d8eea3932fbaa494c8964b7724aa8"
 		},
 		{
+			"ImportPath": "github.com/huandu/facebook",
+			"Comment": "v1.8.1-10-ge104ea5",
+			"Rev": "e104ea5a3c4953b6f11568043bc05abbb5774113"
+		},
+		{
 			"ImportPath": "github.com/ikeikeikeike/go-sitemap-generator/stm",
 			"Rev": "e3c3d374db77838e92e5981ba81f26d1ecea4aa8"
 		},
