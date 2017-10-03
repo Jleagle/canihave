@@ -24,7 +24,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	// Validate item ID
 	match, _ := regexp.MatchString("^[A-Z0-9]{10}$", id)
 	if !match {
-		returnTemplate(w, "error", errorVars{HTTPCode: 404, Message: "Invalid Item ID"})
+		returnError(w, r, errorVars{HTTPCode: 404, Message: "Invalid Item ID"})
 		return
 	}
 
@@ -33,7 +33,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Err("Can't get with extras", err)
 
-		returnTemplate(w, "error", errorVars{HTTPCode: 404, Message: "Can't find item"})
+		returnError(w, r, errorVars{HTTPCode: 404, Message: "Can't find item"})
 		return
 	}
 

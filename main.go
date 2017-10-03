@@ -13,6 +13,7 @@ import (
 
 	amaz "github.com/Jleagle/canihave/amazon"
 	"github.com/Jleagle/canihave/environment"
+	"github.com/Jleagle/canihave/links"
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/scraper"
@@ -82,6 +83,24 @@ func returnTemplate(w http.ResponseWriter, page string, pageData interface{}) {
 	}
 }
 
+func returnError(w http.ResponseWriter, r *http.Request, vars errorVars) {
+
+	logger.Err("Showing error template")
+
+	vars.Links = links.GetHeaderLinks(r)
+	vars.Flag = location.GetAmazonRegion(w, r)
+	vars.Flags = location.GetRegions()
+	vars.Path = r.URL.Path
+
+	params := r.URL.Query()
+
+	vars.Category = params.Get("category")
+	vars.Search = params.Get("search")
+	vars.Sort = params.Get("sort")
+
+	returnTemplate(w, "error", vars)
+}
+
 type commonTemplateVars struct {
 	Links      map[string]string
 	Flag       string
@@ -128,6 +147,7 @@ func fileServer(r chi.Router, path string, root http.FileSystem) {
 }
 
 type errorVars struct {
+	commonTemplateVars
 	HTTPCode int
 	Message  string
 }

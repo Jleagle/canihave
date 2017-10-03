@@ -35,7 +35,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	pageLimit, err := getPageLimit(search, category, region)
 	if err != nil {
 		logger.Err("Can't count all items", err)
-		returnTemplate(w, "error", errorVars{HTTPCode: 503})
+		returnError(w, r, errorVars{HTTPCode: 503})
 		return
 	}
 	pageLimit = int(math.Max(float64(pageLimit), 1))
