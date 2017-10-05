@@ -141,7 +141,7 @@ func GetMulti(ids []string, region string, itemType string) (items []Item) {
 	for _, v := range mcItems {
 		item := decodeItem(v.Value)
 		items = append(items, item)
-		ids = helpers.RemFromArray(ids, store.MEMCACHE_APP_KEY+item.ID)
+		ids = helpers.RemFromArray(ids, item.ID)
 	}
 
 	// MySQL

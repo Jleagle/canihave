@@ -23,10 +23,12 @@ func GetMemcacheItem(key string) (item *memcache.Item, err error) {
 
 func GetMemcacheMulti(keys []string) (items map[string]*memcache.Item, err error) {
 
-	for k, v := range keys {
-		keys[k] = MEMCACHE_APP_KEY + v
+	keys2 := []string{}
+
+	for _, v := range keys {
+		keys2 = append(keys2, MEMCACHE_APP_KEY+v)
 	}
-	return getMemcacheConnection().GetMulti(keys)
+	return getMemcacheConnection().GetMulti(keys2)
 }
 
 func SetMemcacheItem(key string, value []byte) (err error) {
