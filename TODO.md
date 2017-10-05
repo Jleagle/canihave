@@ -20,3 +20,5 @@ TODO
 - Post to social networks automatically
 - Email signups for new items
 - Save for later button
+- delete items in db with 'AWS.InvalidParameterValue' - save to block list?
+- make the main title look alright on mobile

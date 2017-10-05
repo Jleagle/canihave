@@ -3,7 +3,7 @@
 git fetch origin
 git reset --hard origin/master
 
-godep restore
+dep ensure
 go build
 
 /etc/init.d/canihave restart
