@@ -1,26 +1,38 @@
+/* Force scroll bar to stop jumping */
 body {
     overflow-y: scroll;
 }
 
-div.jumbotron {
-    overflow: hidden;
-}
-
+/* Header flags */
 img.flag {
     height: 13px;
     vertical-align: baseline;
     margin-right: 5px;
 }
 
+/* Item Amzon links */
 img.buy-at-amazon {
     height: 17px;
     margin-right: 5px;
 }
 
+/* Nav drop downs */
 a[data-toggle="dropdown"] {
     cursor: pointer;
 }
 
+/* Social links */
 div.social-container {
     height: 24px;
+}
+
+/* Item images */
+div.card a.square {
+    width: 100%;
+    background-size: cover;
+}
+
+/* Main title */
+h1.text-center {
+    overflow: hidden;
 }

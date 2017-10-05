@@ -38,14 +38,12 @@
 
 {{if .Items}}
 
-<div class="row" data-page="1" id="results" data-last="0" data-search="{{.Search64}}">
+<div class="row">
     {{ range .Items }}
 
     <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-4">
         <div class="card">
-            <a href="{{.GetPath}}">
-                <img class="card-img-top" src="{{.Photo}}" alt="{{ .Name }}">
-            </a>
+            <a class="square" href="{{.GetPath}}" style="background-image: url('{{.Photo}}')"></a>
             <div class="card-body">
                 <h6 class="card-title">{{ .Name }}</h6>
                 <p class="card-text">Price: {{.GetCurrency}}{{.GetPrice}}</p>

@@ -64,7 +64,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	vars.Items = getResults(search, category, region, pageInt)
 	vars.Search = search
 	vars.Search64 = base64.StdEncoding.EncodeToString([]byte(search))
-	vars.Javascript = []string{"//platform.twitter.com/widgets.js"}
+	vars.Javascript = []string{"//platform.twitter.com/widgets.js", "assets/search.js"}
 	vars.Flag = region
 	vars.Flags = location.GetRegions()
 	vars.Page = pageInt
@@ -158,7 +158,7 @@ func float64bytes(float float64) []byte {
 
 func filter(query squirrel.SelectBuilder, search string, category string, region string) squirrel.SelectBuilder {
 
-	query = query.Where("type = ?", models.TYPE_SCRAPE)
+	query = query.Where("type = ?", models.TYPE_SCRAPE).Where("photo != ''")
 
 	if search != "" {
 		query = query.Where("name LIKE ?", "%"+search+"%")
