@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CartCreateResponse xmlns="http://webservices.amazon.com/AWSECommerceService/2013-08-01">
+  <OperationRequest>
+    <HTTPHeaders>
+      <Header Name="UserAgent" Value="Go-http-client/1.1"/>
+    </HTTPHeaders>
+    <RequestId>5ea76b41-90fa-4271-a1c0-e1997b1be0a3</RequestId>
+    <Arguments>
+      <Argument Name="AWSAccessKeyId" Value="AKIAITPH62XKCOOT7AKA"/>
+      <Argument Name="AssociateTag" Value="ngsio-22"/>
+      <Argument Name="Item.1.ASIN" Value="4774182389"/>
+      <Argument Name="Item.1.Quantity" Value="2"/>
+      <Argument Name="Item.2.OfferListingId" Value="NTPIbOCYgxigjLlkf1iTQhB6UfAcRHvlKju5nT%2BbVV876t1%2Bpt0pciArjHlsl9LS8iUJP9D5bajBzNN3VDdglcEAAS8lMPyCUArUG6CxF0A%3D"/>
+      <Argument Name="Item.2.Quantity" Value="4"/>
+      <Argument Name="Operation" Value="CartCreate"/>
+      <Argument Name="ResponseGroup" Value="Cart,CartNewReleases,CartSimilarities,CartTopSellers"/>
+      <Argument Name="Service" Value="AWSECommerceService"/>
+      <Argument Name="Signature" Value="qL0kvD6VuJ7eo/Up9mOTdaWNyqaY1K6Ls6g9QN7xcg8="/>
+      <Argument Name="Timestamp" Value="2016-11-20T04:04:09Z"/>
+      <Argument Name="Version" Value="2013-08-01"/>
+    </Arguments>
+    <RequestProcessingTime>0.23874232</RequestProcessingTime>
+  </OperationRequest>
+  <Cart>
+    <Request>
+      <IsValid>True</IsValid>
+      <CartCreateRequest>
+        <Items>
+          <Item>
+            <ASIN>4774182389</ASIN>
+            <Quantity>2</Quantity>
+          </Item>
+          <Item>
+            <OfferListingId>NTPIbOCYgxigjLlkf1iTQhB6UfAcRHvlKju5nT%2BbVV876t1%2Bpt0pciArjHlsl9LS8iUJP9D5bajBzNN3VDdglcEAAS8lMPyCUArUG6CxF0A%3D</OfferListingId>
+            <Quantity>4</Quantity>
+          </Item>
+        </Items>
+        <ResponseGroup>Cart</ResponseGroup>
+        <ResponseGroup>CartNewReleases</ResponseGroup>
+        <ResponseGroup>CartSimilarities</ResponseGroup>
+        <ResponseGroup>CartTopSellers</ResponseGroup>
+      </CartCreateRequest>
+    </Request>
+    <CartId>351-9409673-0414064</CartId>
+    <HMAC>+ak+v8qGeDkkdQ/w0o+5uA2heQI=</HMAC>
+    <URLEncodedHMAC>%2Bak%2Bv8qGeDkkdQ%2Fw0o%2B5uA2heQI%3D</URLEncodedHMAC>
+    <PurchaseURL>https://www.amazon.jp/gp/cart/aws-merge.html?cart-id=351-9409673-0414064%26associate-id=ngsio-22%26hmac=%2Bak%2Bv8qGeDkkdQ%2Fw0o%2B5uA2heQI%3D%26SubscriptionId=AKIAITPH62XKCOOT7AKA%26MergeCart=False</PurchaseURL>
+    <MobileCartURL>https://www.amazon.jp/gp/aw/rcart?cart-id=351-9409673-0414064%26associate-id=ngsio-22%26hmac=%2Bak%2Bv8qGeDkkdQ%2Fw0o%2B5uA2heQI%3D%26SubscriptionId=AKIAITPH62XKCOOT7AKA%26MergeCart=False%26uid=NULLGWDOCOMO</MobileCartURL>
+    <SubTotal>
+      <Amount>20692</Amount>
+      <CurrencyCode>JPY</CurrencyCode>
+      <FormattedPrice>￥ 20,692</FormattedPrice>
+    </SubTotal>
+    <CartItems>
+      <SubTotal>
+        <Amount>20692</Amount>
+        <CurrencyCode>JPY</CurrencyCode>
+        <FormattedPrice>￥ 20,692</FormattedPrice>
+      </SubTotal>
+      <CartItem>
+        <CartItemId>CYOXSP4DGCG16</CartItemId>
+        <ASIN>4774182389</ASIN>
+        <SellerNickname>Amazon.co.jp</SellerNickname>
+        <Quantity>2</Quantity>
+        <Title>Slack入門 [ChatOpsによるチーム開発の効率化]</Title>
+        <ProductGroup>Book</ProductGroup>
+        <Price>
+          <Amount>2138</Amount>
+          <CurrencyCode>JPY</CurrencyCode>
+          <FormattedPrice>￥ 2,138</FormattedPrice>
+        </Price>
+        <ItemTotal>
+          <Amount>4276</Amount>
+          <CurrencyCode>JPY</CurrencyCode>
+          <FormattedPrice>￥ 4,276</FormattedPrice>
+        </ItemTotal>
+      </CartItem>
+      <CartItem>
+        <CartItemId>C30K5HAY097OZO</CartItemId>
+        <ASIN>4621300253</ASIN>
+        <SellerNickname>Amazon.co.jp</SellerNickname>
+        <Quantity>4</Quantity>
+        <Title>プログラミング言語Go (ADDISON-WESLEY PROFESSIONAL COMPUTING SERIES)</Title>
+        <ProductGroup>Book</ProductGroup>
+        <Price>
+          <Amount>4104</Amount>
+          <CurrencyCode>JPY</CurrencyCode>
+          <FormattedPrice>￥ 4,104</FormattedPrice>
+        </Price>
+        <ItemTotal>
+          <Amount>16416</Amount>
+          <CurrencyCode>JPY</CurrencyCode>
+          <FormattedPrice>￥ 16,416</FormattedPrice>
+        </ItemTotal>
+      </CartItem>
+    </CartItems>
+    <SimilarProducts>
+      <SimilarProduct>
+        <ASIN>4822237559</ASIN>
+        <Title>Amazon Web Services 定番業務システム12パターン 設計ガイド</Title>
+      </SimilarProduct>
+      <SimilarProduct>
+        <ASIN>4798142417</ASIN>
+        <Title>スターティングGo言語 (CodeZine BOOKS)</Title>
+      </SimilarProduct>
+      <SimilarProduct>
+        <ASIN>4873117763</ASIN>
+        <Title>Docker</Title>
+      </SimilarProduct>
+      <SimilarProduct>
+        <ASIN>4798147605</ASIN>
+        <Title>DevOps導入指南 Infrastructure as Codeでチーム開発・サービス運用を効率化する (DEV Engineer’s Books)</Title>
+      </SimilarProduct>
+      <SimilarProduct>
+        <ASIN>4873117607</ASIN>
+        <Title>マイクロサービスアーキテクチャ</Title>
+      </SimilarProduct>
+    </SimilarProducts>
+    <NewReleases>
+      <NewRelease>
+        <ASIN>4063958159</ASIN>
+        <Title>進撃の巨人(21): 週刊少年マガジン</Title>
+      </NewRelease>
+      <NewRelease>
+        <ASIN>B01MQG6O6O</ASIN>
+        <Title>狼の口 ヴォルフスムント 8巻&lt;狼の口 ヴォルフスムント> (ビームコミックス（ハルタ）)</Title>
+      </NewRelease>
+      <NewRelease>
+        <ASIN>B01N3KWO8L</ASIN>
+        <Title>Vジャンプ 2017年 01 月号 [雑誌]</Title>
+      </NewRelease>
+      <NewRelease>
+        <ASIN>B01M67T85Q</ASIN>
+        <Title>乃木坂46×週刊プレイボーイ2016</Title>
+      </NewRelease>
+      <NewRelease>
+        <ASIN>404892365X</ASIN>
+        <Title>とある魔術の禁書目録外伝 と ある科学の超電磁砲(12) (電撃コミックス)</Title>
+      </NewRelease>
+    </NewReleases>
+    <SimilarViewedProducts>
+      <SimilarViewedProduct>
+        <ASIN>4274219151</ASIN>
+        <Title>プログラミングElixir</Title>
+      </SimilarViewedProduct>
+      <SimilarViewedProduct>
+        <ASIN>4774182427</ASIN>
+        <Title>WEB+DB PRESS Vol.93</Title>
+      </SimilarViewedProduct>
+      <SimilarViewedProduct>
+        <ASIN>4844337718</ASIN>
+        <Title>UIデザインの心理学―わかりやすさ・使いやすさの法則</Title>
+      </SimilarViewedProduct>
+      <SimilarViewedProduct>
+        <ASIN>4873117550</ASIN>
+        <Title>パフォーマンス向上のためのデザイン設計</Title>
+      </SimilarViewedProduct>
+      <SimilarViewedProduct>
+        <ASIN>4873117526</ASIN>
+        <Title>Go言語によるWebアプリケーション開発</Title>
+      </SimilarViewedProduct>
+    </SimilarViewedProducts>
+  </Cart>
+</CartCreateResponse>
