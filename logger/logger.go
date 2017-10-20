@@ -31,7 +31,7 @@ func log(level logging.Severity, message string, err ...error) {
 
 	message = time.Now().Format("2006-01-02 15-04-05") + " - " + message
 
-	if len(err) > 0 {
+	if len(err) > 0 && err[0] != nil {
 		message = message + ": " + err[0].Error()
 	}
 
