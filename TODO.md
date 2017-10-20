@@ -24,3 +24,5 @@ TODO
 - make the main title look alright on mobile
 - todo, add a validate amazon item function in helpers and use before amazon calls
 - find out why logging doesnt work on DO
+
+- Error: Trying to add item to Mysql: Error 1406: Data too long for column 'name' at row 1

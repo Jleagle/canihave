@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"cloud.google.com/go/logging"
 	"github.com/Jleagle/canihave/environment"
@@ -27,6 +28,8 @@ func ErrExit(message string, err ...error) {
 }
 
 func log(level logging.Severity, message string, err ...error) {
+
+	message = time.Now().Format("2006-01-02 15-04-05") + " - " + message
 
 	if len(err) > 0 {
 		message = message + ": " + err[0].Error()

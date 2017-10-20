@@ -85,7 +85,7 @@ func returnTemplate(w http.ResponseWriter, page string, pageData interface{}) {
 
 func returnError(w http.ResponseWriter, r *http.Request, vars errorVars) {
 
-	logger.Err("Showing error template")
+	logger.Info("Showing error template")
 
 	vars.Links = links.GetHeaderLinks(r)
 	vars.Flag = location.GetAmazonRegion(w, r)
