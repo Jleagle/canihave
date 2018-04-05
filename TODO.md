@@ -26,3 +26,5 @@ TODO
 - find out why logging doesnt work on DO
 
 - Error: Trying to add item to Mysql: Error 1406: Data too long for column 'name' at row 1
+- Add js push notifications
+- fix facebook button
