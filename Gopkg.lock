@@ -20,12 +20,6 @@
   revision = "c5a927568de7aad8a58127d80bcd36ca4e71e454"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/Jleagle/go-helpers"
-  packages = ["rollbar"]
-  revision = "4b42e684a57463989fae7c660bc8a0ab4b627faa"
-
-[[projects]]
   branch = "v1"
   name = "github.com/Masterminds/squirrel"
   packages = ["."]

@@ -7,7 +7,6 @@ import (
 	"github.com/Jleagle/canihave/location"
 	"github.com/Jleagle/canihave/models"
 	"github.com/Jleagle/canihave/store"
-	"github.com/Jleagle/go-helpers/rollbar"
 	"github.com/Masterminds/squirrel"
 )
 
