@@ -5,9 +5,9 @@ import (
 
 	"github.com/Jleagle/canihave/links"
 	"github.com/Jleagle/canihave/location"
-	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/models"
 	"github.com/Jleagle/canihave/store"
+	"github.com/Jleagle/go-helpers/rollbar"
 	"github.com/Masterminds/squirrel"
 )
 
@@ -19,12 +19,12 @@ func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 	rows := store.Query(builder)
 	defer rows.Close()
 
-	results := []models.Category{}
+	var results []models.Category
 	item := models.Category{}
 	for rows.Next() {
 		err := rows.Scan(&item.Category, &item.Count)
 		if err != nil {
-			logger.Err("Can't scan category", err)
+			rollbar.ErrorError(err)
 		}
 
 		results = append(results, item)

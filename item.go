@@ -22,7 +22,10 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
 	// Validate item ID
-	match, _ := regexp.MatchString("^[A-Z0-9]{10}$", id)
+	match, err := regexp.MatchString("^[A-Z0-9]{10}$", id)
+	if err != nil {
+		rollbar.ErrorError(err)
+	}
 	if !match {
 		returnError(w, r, errorVars{HTTPCode: 404, Message: "Invalid Item ID"})
 		return
@@ -31,7 +34,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	// Get item details
 	item, err := models.GetWithExtras(id, location.GetAmazonRegion(w, r), models.TYPE_MANUAL, scraper.SOURCE_Manual)
 	if err != nil {
-		logger.Err("Can't get with extras", err)
+		rollbar.ErrorError(err)
 
 		returnError(w, r, errorVars{HTTPCode: 404, Message: "Can't find item"})
 		return
@@ -62,7 +65,8 @@ func incrementHits(id string) (success bool, err error) {
 	if err == nil {
 		return true, err
 	}
-	logger.Err("Cant increment hits query", err)
+
+	rollbar.ErrorError(err)
 	return false, err
 }
 
