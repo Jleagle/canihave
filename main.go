@@ -56,7 +56,7 @@ func main() {
 	fileServer(r, "/assets", http.Dir(filesDir))
 
 	// Serve
-	log.Fatal(http.ListenAndServe(":8083", r))
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
 func returnTemplate(w http.ResponseWriter, page string, pageData interface{}) {
