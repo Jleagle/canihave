@@ -7,7 +7,6 @@ import (
 	"github.com/Jleagle/canihave/bots"
 	"github.com/Jleagle/canihave/links"
 	"github.com/Jleagle/canihave/location"
-	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/models"
 	"github.com/Jleagle/canihave/scraper"
 	"github.com/Jleagle/canihave/store"
