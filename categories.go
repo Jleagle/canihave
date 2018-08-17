@@ -8,6 +8,7 @@ import (
 	"github.com/Jleagle/canihave/models"
 	"github.com/Jleagle/canihave/store"
 	"github.com/Masterminds/squirrel"
+	"github.com/stvp/rollbar"
 )
 
 func categoriesHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +24,7 @@ func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		err := rows.Scan(&item.Category, &item.Count)
 		if err != nil {
-			rollbar.ErrorError(err)
+			rollbar.Error("error", err)
 		}
 
 		results = append(results, item)

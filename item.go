@@ -7,6 +7,7 @@ import (
 	"github.com/Jleagle/canihave/bots"
 	"github.com/Jleagle/canihave/links"
 	"github.com/Jleagle/canihave/location"
+	"github.com/Jleagle/canihave/logger"
 	"github.com/Jleagle/canihave/models"
 	"github.com/Jleagle/canihave/scraper"
 	"github.com/Jleagle/canihave/store"
@@ -23,7 +24,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	// Validate item ID
 	match, err := regexp.MatchString("^[A-Z0-9]{10}$", id)
 	if err != nil {
-		rollbar.ErrorError(err)
+		logger.Err(err.Error(), err)
 	}
 	if !match {
 		returnError(w, r, errorVars{HTTPCode: 404, Message: "Invalid Item ID"})
@@ -33,7 +34,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	// Get item details
 	item, err := models.GetWithExtras(id, location.GetAmazonRegion(w, r), models.TYPE_MANUAL, scraper.SOURCE_Manual)
 	if err != nil {
-		rollbar.ErrorError(err)
+		logger.Err(err.Error(), err)
 
 		returnError(w, r, errorVars{HTTPCode: 404, Message: "Can't find item"})
 		return
@@ -65,7 +66,7 @@ func incrementHits(id string) (success bool, err error) {
 		return true, err
 	}
 
-	rollbar.ErrorError(err)
+	logger.Err(err.Error(), err)
 	return false, err
 }
 
