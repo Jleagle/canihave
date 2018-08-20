@@ -111,9 +111,9 @@ func getMysqlConnection() *sql.DB {
 
 	if mysqlConnection == nil {
 
-		database := os.Getenv("CANIHAVE_SQL_DB")
-		username := os.Getenv("CANIHAVE_SQL_USERNAME")
-		password := os.Getenv("CANIHAVE_SQL_PW")
+		database := os.Getenv("CANIHAVE_MYSQL_DATABASE")
+		username := os.Getenv("CANIHAVE_MYSQL_USERNAME")
+		password := os.Getenv("CANIHAVE_MYSQL_PASSWORD")
 		if len(password) > 0 {
 			password = ":" + password
 		}
