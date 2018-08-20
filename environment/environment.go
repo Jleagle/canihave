@@ -18,5 +18,5 @@ func IsLocal() bool {
 }
 
 func IsLive() bool {
-	return environment == "live"
+	return environment == "production"
 }
