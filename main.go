@@ -6,9 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	amaz "github.com/Jleagle/canihave/amazon"
@@ -61,17 +59,19 @@ func main() {
 
 func returnTemplate(w http.ResponseWriter, page string, pageData interface{}) {
 
-	// Get current app path
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		logger.Err("No caller information")
-	}
-	folder := path.Dir(file)
-
 	// Load templates needed
-	always := []string{folder + "/templates/header.html", folder + "/templates/footer.html", folder + "/templates/" + page + ".html"}
+	folder := os.Getenv("CANIHAVE_PATH")
+	if folder == "" {
+		folder = "/root"
+	}
 
-	t, err := template.New("t").Funcs(getTemplateFuncMap()).ParseFiles(always...)
+	templates := []string{
+		folder + "/templates/header.html",
+		folder + "/templates/footer.html",
+		folder + "/templates/" + page + ".html",
+	}
+
+	t, err := template.New("t").Funcs(getTemplateFuncMap()).ParseFiles(templates...)
 	if err != nil {
 		logger.ErrExit(err.Error())
 	}
