@@ -2,6 +2,7 @@ package store
 
 import (
 	"io"
+	"os"
 
 	"github.com/bradfitz/gomemcache/memcache"
 )
@@ -42,7 +43,7 @@ func DeleteMemcacheItem(key string) (err error) {
 func getMemcacheConnection() *memcache.Client {
 
 	if memcacheConnection == nil {
-		memcacheConnection = memcache.New("127.0.0.1:11211")
+		memcacheConnection = memcache.New(os.Getenv("CANIHAVE_MEMCACHE_DNS"))
 	}
 	return memcacheConnection
 }
