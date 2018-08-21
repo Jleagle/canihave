@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"database/sql"
 	"encoding/hex"
-	"fmt"
 	"os"
 
 	"github.com/Jleagle/canihave/logger"
@@ -111,18 +110,8 @@ func getMysqlConnection() *sql.DB {
 
 	if mysqlConnection == nil {
 
-		database := os.Getenv("CANIHAVE_MYSQL_DATABASE")
-		username := os.Getenv("CANIHAVE_MYSQL_USERNAME")
-		password := os.Getenv("CANIHAVE_MYSQL_PASSWORD")
-		if len(password) > 0 {
-			password = ":" + password
-		}
-
-		dsn := fmt.Sprintf("%s%s@tcp(%s:%s)/%s",
-			username, password, "127.0.0.1", "3306", database)
-
 		var err error
-		mysqlConnection, err = sql.Open("mysql", dsn)
+		mysqlConnection, err = sql.Open("mysql", os.Getenv("CANIHAVE_MYSQL_DSN"))
 		if err != nil {
 			logger.Err("Can not connect to MySQL", err)
 		}
