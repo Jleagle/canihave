@@ -1,0 +1,98 @@
+{{define "search"}} {{ template "header" .}}
+
+<div id="fb-root"></div>
+<script>
+    (function (d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "//connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.10";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="jumbotron pt-4 pb-4">
+    <h1 class="display-3 text-center">Canihave.one</h1>
+    <p class="lead text-center">Amazon items you didn't realise you needed until now</p>
+
+    <div class="social-container">
+        <div class="fb-like" data-href="https://canihave.one" data-layout="standard" data-action="like"
+             data-size="small" data-show-faces="true" data-share="true">
+        </div>
+    </div>
+    <div class="social-container">
+        <a href="https://twitter.com/Canihave_one" class="twitter-follow-button" data-show-count="false">
+            Follow @Canihave_one
+        </a>
+    </div>
+
+</div>
+
+{{if ne .Search ""}}
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Reset</a></li>
+    <li class="breadcrumb-item active">Showing items that match "{{.Search}}"</li>
+</ol>
+{{end}}
+
+{{if .Items}}
+
+<div class="row">
+    {{ range .Items }}
+
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-4">
+        <div class="card">
+            <a class="square" href="{{.GetPath}}" style="background-image: url('{{.Photo}}')"></a>
+            <div class="card-body">
+                <h6 class="card-title">{{ .Name }}</h6>
+                <p class="card-text">Price: {{.GetCurrency}}{{.GetPrice}}</p>
+                <a class="btn btn-primary" href="{{.GetAmazonLink}}" rel="nofollow" target="_blank">
+                    <img src="/cmd/webserver/assets/amazon-logo.png" alt="Buy at Amazon" class="buy-at-amazon">Buy!
+                </a>
+                <a class="btn btn-primary" href="{{.GetPath}}">Info!</a>
+            </div>
+        </div>
+    </div>
+
+    {{ end }}
+</div>
+
+{{else}}
+
+NO ITEMS
+
+{{end}}
+
+{{if gt .PageLimit 1}}
+<nav>
+    <ul class="pagination pagination-lg justify-content-center mb-5">
+
+        {{if gt .Page 1}}
+        <li class="page-item">
+            <a class="page-link" href="/?page={{dec .Page}}">Previous</a>
+        </li>
+        {{else}}
+        <li class="page-item disabled">
+            <a class="page-link">Previous</a>
+        </li>
+        {{end}}
+
+        <!--<li class="page-item">-->
+        <!--<a class="page-link" href="/?page=1">1</a>-->
+        <!--</li>-->
+
+        {{if lt .Page .PageLimit}}
+        <li class="page-item">
+            <a class="page-link" href="/?page={{inc .Page}}">Next</a>
+        </li>
+        {{else}}
+        <li class="page-item disabled">
+            <a class="page-link">Next</a>
+        </li>
+        {{end}}
+    </ul>
+</nav>
+{{end}}
+
+{{ template "footer" .}} {{end}}
