@@ -12,10 +12,10 @@ import (
 	"github.com/Jleagle/canihave/pkg/location"
 	"github.com/Jleagle/canihave/pkg/logger"
 	"github.com/Jleagle/canihave/pkg/memcache"
-	"github.com/Jleagle/canihave/pkg/models"
 	"github.com/Jleagle/canihave/pkg/mysql"
 	"github.com/Masterminds/squirrel"
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
 var perPage = 64
@@ -29,7 +29,7 @@ func searchHandler(c *fiber.Ctx) error {
 
 	pageLimit, err := getPageLimit(search, category, region)
 	if err != nil {
-		logger.Err("Can't count all items", err)
+		logger.Logger.Error("Can't count all items", zap.Error(err))
 		returnError(c, errorVars{HTTPCode: 503})
 		return
 	}
@@ -98,7 +98,7 @@ func getResults(search string, category string, region string, page int) []mysql
 	for rows.Next() {
 		err := rows.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Type, &i.CompanyName)
 		if err != nil {
-			logger.Err("Can't scan search result", err)
+			logger.Logger.Error("Can't scan search result", zap.Error(err))
 		}
 
 		results = append(results, i)
@@ -135,7 +135,7 @@ func getPageLimit(search string, category string, region string) (ret int, err e
 		return int(binary.BigEndian.Uint64(mcItem.Value)), err
 	}
 
-	logger.Err("Getting page limit from memcache", err)
+	logger.Logger.Error("Getting page limit from memcache", zap.Error(err))
 	return 1, err
 }
 

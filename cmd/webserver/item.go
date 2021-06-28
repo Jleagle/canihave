@@ -6,7 +6,6 @@ import (
 	"github.com/Jleagle/canihave/pkg/helpers"
 	"github.com/Jleagle/canihave/pkg/location"
 	"github.com/Jleagle/canihave/pkg/logger"
-	"github.com/Jleagle/canihave/pkg/models"
 	"github.com/Jleagle/canihave/pkg/mysql"
 	"github.com/Masterminds/squirrel"
 	"github.com/gofiber/fiber/v2"
@@ -19,7 +18,7 @@ func itemHandler(c *fiber.Ctx) error {
 	// Validate item ID
 	match, err := regexp.MatchString("^[A-Z0-9]{10}$", id)
 	if err != nil {
-		logger.Err(err.Error(), err)
+		logger.Logger.Error(err.Error(), err)
 	}
 	if !match {
 		returnError(c, errorVars{HTTPCode: 404, Message: "Invalid Item ID"})
@@ -29,7 +28,7 @@ func itemHandler(c *fiber.Ctx) error {
 	// Get item details
 	item, err := mysql.GetWithExtras(id, location.GetRegion(c), models.typeManual, main.SOURCE_Manual)
 	if err != nil {
-		logger.Err(err.Error(), err)
+		logger.Logger.Error(err.Error(), err)
 
 		returnError(c, errorVars{HTTPCode: 404, Message: "Can't find item"})
 		return
@@ -51,7 +50,7 @@ func itemHandler(c *fiber.Ctx) error {
 	vars.Flag = location.GetRegion(c)
 	vars.Flags = location.GetRegions()
 	vars.Path = c.Path()
-	vars.Similar = item.GetRelated(models.typeSimilar)
+	vars.Similar = item.GetRelated(mysql.TypeSimilar)
 
 	returnTemplate(c, "item", vars)
 	return nil
@@ -65,7 +64,7 @@ func incrementHits(id string) (success bool, err error) {
 		return true, err
 	}
 
-	logger.Err(err.Error(), err)
+	logger.Logger.Error(err.Error(), err)
 	return false, err
 }
 

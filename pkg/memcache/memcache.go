@@ -2,8 +2,8 @@ package memcache
 
 import (
 	"io"
-	"os"
 
+	"github.com/Jleagle/canihave/pkg/config"
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
@@ -43,7 +43,7 @@ func DeleteMemcacheItem(key string) (err error) {
 func getMemcacheConnection() *memcache.Client {
 
 	if memcacheConnection == nil {
-		memcacheConnection = memcache.New(os.Getenv("CANIHAVE_MEMCACHE_DNS"))
+		memcacheConnection = memcache.New(config.Memcache)
 	}
 	return memcacheConnection
 }

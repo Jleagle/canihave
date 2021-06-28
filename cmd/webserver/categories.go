@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/Jleagle/canihave/pkg/location"
-	"github.com/Jleagle/canihave/pkg/models"
 	"github.com/Jleagle/canihave/pkg/mysql"
 	"github.com/Masterminds/squirrel"
 	"github.com/gofiber/fiber/v2"
@@ -11,7 +10,7 @@ import (
 
 func categoriesHandler(c *fiber.Ctx) error {
 
-	builder := squirrel.Select("nodeName AS category, count(nodeName) AS count").From("items").GroupBy("nodeName").OrderBy("count DESC").Where("type = ?", models.typeScraper)
+	builder := squirrel.Select("nodeName AS category, count(nodeName) AS count").From("items").GroupBy("nodeName").OrderBy("count DESC").Where("type = ?", mysql.TypeScraper)
 	rows := mysql.Query(builder)
 
 	//goland:noinspection GoUnhandledErrorResult

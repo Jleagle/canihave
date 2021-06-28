@@ -4,15 +4,16 @@ import (
 	"net/http"
 	"time"
 
-	logger2 "github.com/Jleagle/canihave/pkg/logger"
-	models2 "github.com/Jleagle/canihave/pkg/models"
+	"github.com/Jleagle/canihave/pkg/logger"
 	"github.com/Jleagle/canihave/pkg/mysql"
 	"github.com/Masterminds/squirrel"
+	"github.com/gofiber/fiber/v2"
 	"github.com/ikeikeikeike/go-sitemap-generator/stm"
 	"github.com/metal3d/go-slugify"
+	"go.uber.org/zap"
 )
 
-func siteMapHandler(w http.ResponseWriter, r *http.Request) {
+func siteMapHandler(c *fiber.Ctx) error {
 
 	sm := stm.NewSitemap()
 	sm.SetDefaultHost("https://canihave.one/")
@@ -27,7 +28,7 @@ func siteMapHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		err := rows.Scan(&i.ID, &i.DateCreated, &i.DateUpdated, &i.DateScanned, &i.Name, &i.Link, &i.Source, &i.SalesRank, &i.Photo, &i.Node, &i.NodeName, &i.Price, &i.Region, &i.Hits, &i.Type, &i.CompanyName)
 		if err != nil {
-			logger2.Err("Can't scan site map result", err)
+			logger.Logger.Error("Can't scan site map result", zap.Error(err))
 		}
 
 		sm.Add(stm.URL{

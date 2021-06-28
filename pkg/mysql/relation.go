@@ -1,12 +1,13 @@
 package mysql
 
 import (
-	"log"
 	"strings"
 	"time"
 
 	"github.com/Jleagle/canihave/pkg/amazon"
+	"github.com/Jleagle/canihave/pkg/logger"
 	"github.com/Masterminds/squirrel"
+	"go.uber.org/zap"
 )
 
 type Relation struct {
@@ -23,7 +24,7 @@ func saveSimilarItems(id string, region amazon.reg, itemType string) {
 	if err != nil && strings.Contains(err.Error(), "AWS.ECommerceService.NoSimilarities") {
 		return
 	} else if err != nil {
-		log.Fatal(err)
+		logger.Logger.Fatal("", zap.Error(err))
 	}
 
 	for _, amazonItem := range similar.Items.Item {
@@ -36,7 +37,7 @@ func saveSimilarItems(id string, region amazon.reg, itemType string) {
 		// Save the relation
 		builder := squirrel.Insert("relations")
 		builder = builder.Columns("id", "relatedId", "dateCreated", "type")
-		builder = builder.Values(id, item.ID, time.Now().Unix(), typeSimilar)
+		builder = builder.Values(id, item.ID, time.Now().Unix(), TypeSimilar)
 
 		err := mysql2.Insert(builder)
 
@@ -47,14 +48,9 @@ func saveSimilarItems(id string, region amazon.reg, itemType string) {
 		}
 
 		if err != nil {
-			logger2.Err("Can't insert related item", err)
+			logger2.Err("Can't insert related item", zap.Error(err))
 		}
 	}
-}
-
-func saveNodeitems(node string, region string) {
-
-	//nodeItems, err := amaz.GetNodeDetails(node, region)
 }
 
 func (i Item) GetRelated(itemType string) (items []Item) {
@@ -69,7 +65,7 @@ func (i Item) GetRelated(itemType string) (items []Item) {
 		var id string
 		err := rows.Scan(&id)
 		if err != nil {
-			logger2.Err("Can't scan related item", err)
+			logger2.Err("Can't scan related item", zap.Error(err))
 		}
 		ids = append(ids, id)
 	}

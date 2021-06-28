@@ -7,7 +7,7 @@ import (
 	"text/template"
 	"time"
 
-	config2 "github.com/Jleagle/canihave/pkg/config"
+	"github.com/Jleagle/canihave/pkg/config"
 	"github.com/Jleagle/canihave/pkg/location"
 	"github.com/Jleagle/canihave/pkg/logger"
 	"github.com/gofiber/fiber/v2"
@@ -22,7 +22,7 @@ func main() {
 	app := fiber.New()
 
 	// Middleware
-	if config2.Environment == config2.EnvProd {
+	if config.Environment == config.EnvProd {
 		app.Use(fiverCache.New(fiverCache.Config{Expiration: time.Minute, KeyGenerator: func(c *fiber.Ctx) string { return c.OriginalURL() }}))
 	}
 	app.Use(compress.New(compress.Config{Level: compress.LevelBestSpeed}))
@@ -37,7 +37,7 @@ func main() {
 	app.Get("/:id/:slug", itemHandler)
 
 	// Serve
-	err := app.Listen("0.0.0.0:" + config2.Port)
+	err := app.Listen("0.0.0.0:" + config.Port)
 	fmt.Println(err)
 }
 
@@ -76,19 +76,19 @@ func returnTemplate(c *fiber.Ctx, page string, pageData interface{}) {
 
 	t, err := template.New("t").Funcs(getTemplateFuncMap()).ParseFiles(templates...)
 	if err != nil {
-		logger.ErrExit(err.Error())
+		logger.Logger.Error(err.Error())
 	}
 
 	// Write a respone
 	err = t.ExecuteTemplate(w, page, pageData)
 	if err != nil {
-		logger.ErrExit(err.Error())
+		logger.Logger.Error(err.Error())
 	}
 }
 
 func returnError(c *fiber.Ctx, vars errorVars) {
 
-	logger.Info("Showing error template")
+	logger.Logger.Info("Showing error template")
 
 	vars.Flag = location.GetRegion(c)
 	vars.Flags = location.GetRegions()

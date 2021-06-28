@@ -1,62 +1,17 @@
 package logger
 
 import (
-	"context"
 	"fmt"
-	"os"
-	"time"
 
-	"cloud.google.com/go/logging"
-	"github.com/Jleagle/canihave/pkg/config"
+	"go.uber.org/zap"
 )
 
-const (
-	projectID string = "canihaveone-1"
-)
+var Logger *zap.Logger
 
-func Info(message string, err ...error) {
-	log(logging.Info, "Notice: "+message, err...)
-}
-
-func Err(message string, err ...error) {
-	log(logging.Error, "Error: "+message, err...)
-}
-
-func ErrExit(message string, err ...error) {
-	Err(message, err...)
-	os.Exit(1)
-}
-
-func log(level logging.Severity, message string, err ...error) {
-
-	message = time.Now().Format("2006-01-02 15-04-05") + " - " + message
-
-	if len(err) > 0 && err[0] != nil {
-		message = message + ": " + err[0].Error()
-	}
-
-	if config.IsProd() && false {
-
-		ctx := context.Background()
-		c, err := logging.NewClient(ctx, projectID)
-		if err != nil {
-			fmt.Println("Failed to create logging client: " + err.Error())
-		}
-
-		c.Logger("all").Log(logging.Entry{
-			Severity: level,
-			Payload:  message,
-		})
-
-		go func() {
-			err := c.Close()
-			if err != nil {
-				fmt.Println("Error sending logs to Google")
-			}
-		}()
-
-	} else {
-
-		fmt.Println(message)
+func init() {
+	var err error
+	Logger, err = zap.NewDevelopment()
+	if err != nil {
+		fmt.Println(err)
 	}
 }

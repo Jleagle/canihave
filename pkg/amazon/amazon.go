@@ -3,7 +3,6 @@ package amazon
 import (
 	"errors"
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"github.com/Jleagle/canihave/pkg/location"
 	"github.com/Jleagle/canihave/pkg/logger"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
+	"go.uber.org/zap"
 )
 
 var RateLimit = time.Tick(time.Millisecond * 1000)
@@ -34,7 +34,7 @@ func getAmazonClient(region amazon.Region) (*amazon.Client, error) {
 			region,
 		)
 		if err != nil {
-			logger.Err("Can't create Amazon client", err)
+			logger.Logger.Error("Can't create Amazon client", zap.Error(err))
 		}
 	}
 
@@ -43,7 +43,7 @@ func getAmazonClient(region amazon.Region) (*amazon.Client, error) {
 
 func GetItemDetails(ids []string, region amazon.Region) (resp *amazon.ItemLookupResponse, err error) {
 
-	ids = helpers.RemoveDuplicatesUnordered(ids)
+	ids = helpers.RemoveDuplicates(ids)
 
 	if len(ids) > 10 {
 		return nil, errors.New("you can only query 10 items at a time")
@@ -66,7 +66,7 @@ func GetItemDetails(ids []string, region amazon.Region) (resp *amazon.ItemLookup
 
 	if err != nil && strings.Contains(err.Error(), "RequestThrottled") {
 
-		logger.Info("Retrying amazon API call because RequestThrottled")
+		logger.Logger.Info("Retrying amazon API call because RequestThrottled")
 		return GetItemDetails(ids, region)
 	}
 
@@ -108,12 +108,12 @@ func GetItemDetailsBulk(ids []string, region amazon.Region) (ret []amazon.Item) 
 			r := regexp.MustCompile(`Value: ([A-Z0-9]{10}) is not`)
 			links := r.FindAllString(err.Error(), 1)
 
-			logger.Err("One item in a batch failed: "+links[1], err)
+			logger.Logger.Error("One item in a batch failed: "+links[1], zap.Error(err))
 
 		} else if err != nil {
 
 			// Fail
-			logger.Err("Can't get amazon items", err)
+			logger.Logger.Error("Can't get amazon items", zap.Error(err))
 		} else {
 
 			// Success
@@ -167,7 +167,7 @@ func GetNodeDetails(node string, region amazon.Region) (nil, err error) {
 	}).Do()
 
 	if err != nil {
-		log.Fatal(err) // Remove
+		logger.Logger.Fatal("", zap.Error(err))
 	}
 
 	browseNode := res.BrowseNodes()[0]
@@ -191,7 +191,7 @@ func Search(search string, region amazon.Region) (nil, err error) {
 	}).Do()
 
 	if err != nil {
-		log.Fatal(err) // Remove
+		logger.Logger.Fatal("", zap.Error(err))
 	}
 
 	fmt.Printf("%d results found\n\n", res.Items.TotalResults)
