@@ -4,21 +4,28 @@ import (
 	"sync"
 
 	"github.com/Jleagle/canihave/pkg/config"
-	"github.com/Jleagle/canihave/pkg/logger"
+	"github.com/Jleagle/memcache-go"
 	"github.com/jmoiron/sqlx"
-	"go.uber.org/zap"
 )
 
 var (
-	client     *sqlx.DB
-	clientLock sync.Mutex
+	mySQLClient     *sqlx.DB
+	mySQLClientLock sync.Mutex
+
+	memcacheClient = memcache.NewClient("localhost:11211")
 )
 
-func getClient() {
+func getClient() (*sqlx.DB, error) {
 
-	var err error
-	client, err = sqlx.Connect("mysql", "Uid="+config.MySQLUser+" Pwd="+config.MySQLPass+" Server="+config.MySQLIP+" Database="+config.MySQLDB)
+	mySQLClientLock.Lock()
+	defer mySQLClientLock.Unlock()
+
+	c, err := sqlx.Connect("mysql", config.MySQLUser+":"+config.MySQLPass+"@"+config.MySQLIP+"/"+config.MySQLDB+"?parseTime=True")
 	if err != nil {
-		logger.Logger.Error("Connecting to MySQL", zap.Error(err))
+		return nil, err
 	}
+
+	mySQLClient = c
+
+	return mySQLClient, nil
 }

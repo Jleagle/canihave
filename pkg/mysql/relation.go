@@ -4,9 +4,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Jleagle/canihave/pkg/amazon"
+	amazonHelper "github.com/Jleagle/canihave/pkg/amazon"
 	"github.com/Jleagle/canihave/pkg/logger"
 	"github.com/Masterminds/squirrel"
+	"github.com/go-sql-driver/mysql"
+	"github.com/ngs/go-amazon-product-advertising-api/amazon"
 	"go.uber.org/zap"
 )
 
@@ -17,9 +19,9 @@ type Relation struct {
 	Type        string
 }
 
-func saveSimilarItems(id string, region amazon.reg, itemType string) {
+func saveSimilarItems(id string, region amazon.Region, itemType string) {
 
-	similar, err := amazon.GetSimilarItems(id, region)
+	similar, err := amazonHelper.GetSimilarItems(id, region)
 
 	if err != nil && strings.Contains(err.Error(), "AWS.ECommerceService.NoSimilarities") {
 		return
@@ -39,16 +41,16 @@ func saveSimilarItems(id string, region amazon.reg, itemType string) {
 		builder = builder.Columns("id", "relatedId", "dateCreated", "type")
 		builder = builder.Values(id, item.ID, time.Now().Unix(), TypeSimilar)
 
-		err := mysql2.Insert(builder)
+		err := mysql.Insert(builder)
 
-		if sqlerr, ok := err.(*MySQLError); ok {
+		if sqlerr, ok := err.(*mysql.MySQLError); ok {
 			if sqlerr.Number == 1062 { // Duplicate entry
 				continue
 			}
 		}
 
 		if err != nil {
-			logger2.Err("Can't insert related item", zap.Error(err))
+			logger.Logger.Error("Can't insert related item", zap.Error(err))
 		}
 	}
 }
@@ -56,7 +58,7 @@ func saveSimilarItems(id string, region amazon.reg, itemType string) {
 func (i Item) GetRelated(itemType string) (items []Item) {
 
 	builder := squirrel.Select("relatedId").From("relations").Where("id = ? AND type = ?", i.ID, itemType)
-	rows := mysql2.Query(builder)
+	rows := mysql.Query(builder)
 	defer rows.Close()
 
 	var ids []string

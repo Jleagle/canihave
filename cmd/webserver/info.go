@@ -13,9 +13,9 @@ func infoHandler(c *fiber.Ctx) error {
 	vars.Flags = location.GetRegions()
 	vars.Path = c.Path()
 
-	returnTemplate(c, "info", vars)
-
-	return nil
+	return returnTemplate(c, "info", fiber.Map{
+		"Title": "Hello, World!",
+	})
 }
 
 type infoVars struct {

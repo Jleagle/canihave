@@ -3,8 +3,8 @@ package amazon
 import (
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Jleagle/canihave/pkg/config"
@@ -15,30 +15,34 @@ import (
 	"go.uber.org/zap"
 )
 
-var RateLimit = time.Tick(time.Millisecond * 1000)
-
-var amazonConnection *amazon.Client
+var (
+	clients    = map[amazon.Region]*amazon.Client{}
+	clientRate = time.Tick(time.Millisecond * 1000)
+	clientLock sync.Mutex
+)
 
 func getAmazonClient(region amazon.Region) (*amazon.Client, error) {
 
-	<-RateLimit
+	clientLock.Lock()
+	defer clientLock.Unlock()
 
-	var err error
-
-	if amazonConnection == nil {
-
-		amazonConnection, err = amazon.New(
-			config.AmazonAPIKey,
-			config.AmazonAPISecret,
-			location.GetAmazonTag(region),
-			region,
-		)
-		if err != nil {
-			logger.Logger.Error("Can't create Amazon client", zap.Error(err))
-		}
+	if val, ok := clients[region]; ok {
+		return val, nil
 	}
 
-	return amazonConnection, err
+	client, err := amazon.New(
+		config.AmazonAPIKey,
+		config.AmazonAPISecret,
+		location.GetAmazonTag(region),
+		region,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	clients[region] = client
+
+	return client, err
 }
 
 func GetItemDetails(ids []string, region amazon.Region) (resp *amazon.ItemLookupResponse, err error) {
@@ -48,6 +52,8 @@ func GetItemDetails(ids []string, region amazon.Region) (resp *amazon.ItemLookup
 	if len(ids) > 10 {
 		return nil, errors.New("you can only query 10 items at a time")
 	}
+
+	<-clientRate
 
 	client, err := getAmazonClient(region)
 	if err != nil {
@@ -73,60 +79,43 @@ func GetItemDetails(ids []string, region amazon.Region) (resp *amazon.ItemLookup
 	return resp, err
 }
 
-// Will return an error if any of the IDs fail
-func GetItemDetailsBulk(ids []string, region amazon.Region) (ret []amazon.Item) {
+func GetItems(ids []string, region amazon.Region) (resp *amazon.ItemLookupResponse, err error) {
 
-	// Chunk the IDs into 10s
-	var items [][]string
-	var subItems []string
+	ids = helpers.RemoveDuplicates(ids)
 
-	for _, v := range ids {
-
-		subItems = append(subItems, v)
-
-		if len(subItems) == 10 {
-			items = append(items, subItems)
-			subItems = []string{}
-		}
+	if len(ids) > 10 {
+		return nil, errors.New("you can only query 10 items at a time")
 	}
 
-	if len(subItems) > 0 {
-		items = append(items, subItems)
-		subItems = []string{}
+	<-clientRate
+
+	client, err := getAmazonClient(region)
+	if err != nil {
+		return nil, err
 	}
 
-	count := 0
-	for _, subItem := range items {
+	resp, err = client.ItemLookup(amazon.ItemLookupParameters{
+		ResponseGroups: []amazon.ItemLookupResponseGroup{
+			amazon.ItemLookupResponseGroupMedium,
+			amazon.ItemLookupResponseGroupReviews,
+			amazon.ItemLookupResponseGroupEditorialReview,
+		},
+		IDType:  amazon.IDTypeASIN,
+		ItemIDs: ids,
+	}).Do()
 
-		count += 10
-		fmt.Print(count)
+	if err != nil && strings.Contains(err.Error(), "RequestThrottled") {
 
-		amazonItems, err := GetItemDetails(subItem, region)
-		if err != nil && strings.Contains(err.Error(), "AWS.InvalidParameterValue") {
-
-			// One of the bunch failed
-			r := regexp.MustCompile(`Value: ([A-Z0-9]{10}) is not`)
-			links := r.FindAllString(err.Error(), 1)
-
-			logger.Logger.Error("One item in a batch failed: "+links[1], zap.Error(err))
-
-		} else if err != nil {
-
-			// Fail
-			logger.Logger.Error("Can't get amazon items", zap.Error(err))
-		} else {
-
-			// Success
-			for _, v := range amazonItems.Items.Item {
-				ret = append(ret, v)
-			}
-		}
+		logger.Logger.Info("Retrying amazon API call because RequestThrottled")
+		return GetItems(ids, region)
 	}
 
-	return ret
+	return resp, err
 }
 
 func GetSimilarItems(id string, region amazon.Region) (resp *amazon.SimilarityLookupResponse, err error) {
+
+	<-clientRate
 
 	client, err := getAmazonClient(region)
 	if err != nil {
@@ -148,7 +137,9 @@ func GetSimilarItems(id string, region amazon.Region) (resp *amazon.SimilarityLo
 	return resp, err
 }
 
-func GetNodeDetails(node string, region amazon.Region) (nil, err error) {
+func GetNode(node string, region amazon.Region) (nil, err error) {
+
+	<-clientRate
 
 	client, err := getAmazonClient(region)
 	if err != nil {
@@ -175,7 +166,9 @@ func GetNodeDetails(node string, region amazon.Region) (nil, err error) {
 	return nil, err
 }
 
-func Search(search string, region amazon.Region) (nil, err error) {
+func SearchItems(search string, region amazon.Region) (nil, err error) {
+
+	<-clientRate
 
 	client, err := getAmazonClient(region)
 	if err != nil {

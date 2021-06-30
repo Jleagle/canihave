@@ -1,29 +1,37 @@
 package main
 
 import (
+	"embed"
 	"fmt"
-	"os"
+	"net/http"
 	"strings"
-	"text/template"
 	"time"
 
 	"github.com/Jleagle/canihave/pkg/config"
-	"github.com/Jleagle/canihave/pkg/location"
-	"github.com/Jleagle/canihave/pkg/logger"
 	"github.com/gofiber/fiber/v2"
-	fiverCache "github.com/gofiber/fiber/v2/middleware/cache"
+	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/template/html"
 	"github.com/ngs/go-amazon-product-advertising-api/amazon"
 )
 
+//go:embed views/*
+var viewsfs embed.FS
+
 func main() {
 
-	app := fiber.New()
+	engine := html.NewFileSystem(http.FS(viewsfs), ".gohtml")
+	engine.AddFunc("inc", func(i int) int { return i + 1 })
+	engine.AddFunc("dec", func(i int) int { return i - 1 })
+	engine.AddFunc("cmp", func(i interface{}, j interface{}) bool { return i == j })
+	engine.AddFunc("startsWith", func(string string, prefix string) bool { return strings.HasPrefix(string, prefix) })
+
+	app := fiber.New(fiber.Config{Views: engine})
 
 	// Middleware
 	if config.Environment == config.EnvProd {
-		app.Use(fiverCache.New(fiverCache.Config{Expiration: time.Minute, KeyGenerator: func(c *fiber.Ctx) string { return c.OriginalURL() }}))
+		app.Use(cache.New(cache.Config{Expiration: time.Minute, KeyGenerator: func(c *fiber.Ctx) string { return c.OriginalURL() }}))
 	}
 	app.Use(compress.New(compress.Config{Level: compress.LevelBestSpeed}))
 	app.Use(cors.New(cors.Config{AllowOrigins: "*", AllowMethods: "GET"}))
@@ -42,63 +50,31 @@ func main() {
 }
 
 func homeHandler(c *fiber.Ctx) error {
-	return c.SendString("OK")
+
+	return returnTemplate(c, "home", fiber.Map{
+		"Title": "Hello, World!",
+	})
 }
 
 func sitemapHandler(c *fiber.Ctx) error {
-	return c.SendString("OK")
+
+	return returnTemplate(c, "sitemap", fiber.Map{
+		"Title": "Hello, World!",
+	})
 }
 
-func getTemplateFuncMap() map[string]interface{} {
-	return template.FuncMap{
-		"inc": func(i int) int { return i + 1 },
-		"dec": func(i int) int { return i - 1 },
-		"cmp": func(i interface{}, j interface{}) bool { return i == j },
-		"startsWith": func(string string, prefix string) bool {
-			return strings.HasPrefix(string, prefix)
-		},
-	}
+func returnTemplate(c *fiber.Ctx, page string, pageData fiber.Map) error {
+
+	c.Response().Header.Set("x", "x")
+
+	return c.Render(page, pageData)
 }
 
-func returnTemplate(c *fiber.Ctx, page string, pageData interface{}) {
+func returnError(c *fiber.Ctx) error {
 
-	// Load templates needed
-	folder := os.Getenv("CANIHAVE_PATH")
-	if folder == "" {
-		folder = "/root"
-	}
-
-	templates := []string{
-		folder + "/templates/header.html",
-		folder + "/templates/footer.html",
-		folder + "/templates/" + page + ".html",
-	}
-
-	t, err := template.New("t").Funcs(getTemplateFuncMap()).ParseFiles(templates...)
-	if err != nil {
-		logger.Logger.Error(err.Error())
-	}
-
-	// Write a respone
-	err = t.ExecuteTemplate(w, page, pageData)
-	if err != nil {
-		logger.Logger.Error(err.Error())
-	}
-}
-
-func returnError(c *fiber.Ctx, vars errorVars) {
-
-	logger.Logger.Info("Showing error template")
-
-	vars.Flag = location.GetRegion(c)
-	vars.Flags = location.GetRegions()
-	vars.Path = c.Path()
-
-	vars.Category = c.Query("category")
-	vars.Search = c.Query("search")
-	vars.Sort = c.Query("sort")
-
-	returnTemplate(c, "error", vars)
+	return returnTemplate(c, "error", fiber.Map{
+		"Title": "Hello, World!",
+	})
 }
 
 type commonTemplateVars struct {

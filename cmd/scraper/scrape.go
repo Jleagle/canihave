@@ -1,15 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"regexp"
 
+	"github.com/Jleagle/canihave/pkg/config"
 	"github.com/Jleagle/canihave/pkg/helpers"
 	"github.com/Jleagle/canihave/pkg/location"
 	"github.com/Jleagle/canihave/pkg/logger"
 	"github.com/Jleagle/canihave/pkg/mysql"
 	"github.com/Jleagle/canihave/pkg/social"
+	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
 	"go.uber.org/zap"
 )
 
@@ -21,6 +24,15 @@ const (
 	siteFiveStar         = "fivestar"
 	siteBoughtItOnce     = "boughtitonce"
 )
+
+func searchx() {
+
+	client := search.NewClient(config.AlgoliaAppID, config.AlgoliaSearch)
+
+	index := client.InitIndex("products")
+
+	fmt.Println(index)
+}
 
 func ScrapeHandler(social bool) {
 

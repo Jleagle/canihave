@@ -9,6 +9,7 @@ import (
 	"github.com/Jleagle/canihave/pkg/mysql"
 	"github.com/Masterminds/squirrel"
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
 func itemHandler(c *fiber.Ctx) error {
@@ -18,7 +19,7 @@ func itemHandler(c *fiber.Ctx) error {
 	// Validate item ID
 	match, err := regexp.MatchString("^[A-Z0-9]{10}$", id)
 	if err != nil {
-		logger.Logger.Error(err.Error(), err)
+		logger.Logger.Error("", zap.Error(err))
 	}
 	if !match {
 		returnError(c, errorVars{HTTPCode: 404, Message: "Invalid Item ID"})
@@ -28,7 +29,7 @@ func itemHandler(c *fiber.Ctx) error {
 	// Get item details
 	item, err := mysql.GetWithExtras(id, location.GetRegion(c), models.typeManual, main.SOURCE_Manual)
 	if err != nil {
-		logger.Logger.Error(err.Error(), err)
+		logger.Logger.Error("", zap.Error(err))
 
 		returnError(c, errorVars{HTTPCode: 404, Message: "Can't find item"})
 		return
@@ -52,8 +53,9 @@ func itemHandler(c *fiber.Ctx) error {
 	vars.Path = c.Path()
 	vars.Similar = item.GetRelated(mysql.TypeSimilar)
 
-	returnTemplate(c, "item", vars)
-	return nil
+	return returnTemplate(c, "item", fiber.Map{
+		"Title": "Hello, World!",
+	})
 }
 
 func incrementHits(id string) (success bool, err error) {

@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/ChimeraCoder/anaconda v2.0.0+incompatible
 	github.com/ChimeraCoder/tokenbucket v0.0.0-20131201223612-c5a927568de7 // indirect
+	github.com/Jleagle/memcache-go v0.0.0-20210309190441-636ebc04a889 // indirect
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/VividCortex/mysqlerr v1.0.0
 	github.com/algolia/algoliasearch-client-go/v3 v3.19.0
@@ -15,6 +16,8 @@ require (
 	github.com/dustin/gojson v0.0.0-20160307161227-2e71ec9dd5ad // indirect
 	github.com/garyburd/go-oauth v0.0.0-20180319155456-bca2e7f09a17 // indirect
 	github.com/gofiber/fiber/v2 v2.13.0
+	github.com/gofiber/template v1.6.12 // indirect
+	github.com/gosimple/slug v1.9.0 // indirect
 	github.com/huandu/facebook v2.3.1+incompatible
 	github.com/ikeikeikeike/go-sitemap-generator v1.0.2
 	github.com/jmoiron/sqlx v1.3.4

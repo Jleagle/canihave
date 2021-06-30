@@ -1,15 +1,14 @@
 package main
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/Jleagle/canihave/pkg/logger"
 	"github.com/Jleagle/canihave/pkg/mysql"
 	"github.com/Masterminds/squirrel"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gosimple/slug"
 	"github.com/ikeikeikeike/go-sitemap-generator/stm"
-	"github.com/metal3d/go-slugify"
 	"go.uber.org/zap"
 )
 
@@ -20,7 +19,7 @@ func siteMapHandler(c *fiber.Ctx) error {
 	sm.SetCompress(true)
 	sm.Create()
 
-	query := squirrel.Select("*").From("items").OrderBy("type = '" + models2.typeScraper + "' DESC, dateCreated DESC").Limit(1000)
+	query := squirrel.Select("*").From("items").OrderBy("type = '" + mysql.TypeScraper + "' DESC, dateCreated DESC").Limit(1000)
 	rows := mysql.Query(query)
 	defer rows.Close()
 
@@ -32,7 +31,7 @@ func siteMapHandler(c *fiber.Ctx) error {
 		}
 
 		sm.Add(stm.URL{
-			"loc":        "/" + i.ID + "/" + slugify.Marshal(i.Name, true),
+			"loc":        "/" + i.ID + "/" + slug.Make(i.Name),
 			"changefreq": "daily",
 			"mobile":     true,
 			"news": stm.URL{
@@ -48,5 +47,6 @@ func siteMapHandler(c *fiber.Ctx) error {
 	}
 
 	w.Write(sm.XMLContent())
-	return
+
+	return nil
 }
