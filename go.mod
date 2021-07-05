@@ -25,6 +25,7 @@ require (
 	github.com/mssola/user_agent v0.5.3
 	github.com/ngs/go-amazon-product-advertising-api v0.0.0-20161203193458-61566202d7a2
 	github.com/oschwald/maxminddb-golang v1.8.0
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/stvp/rollbar v0.5.1
 	go.uber.org/atomic v1.8.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect

@@ -1,49 +1,39 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"regexp"
 
-	"github.com/Jleagle/canihave/pkg/config"
+	"github.com/Jleagle/canihave/cmd/cron/sites"
 	"github.com/Jleagle/canihave/pkg/helpers"
 	"github.com/Jleagle/canihave/pkg/location"
 	"github.com/Jleagle/canihave/pkg/logger"
 	"github.com/Jleagle/canihave/pkg/mysql"
 	"github.com/Jleagle/canihave/pkg/social"
-	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
+	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
 )
 
-const (
-	siteShitYouCanAfford = "shityoucanafford"
-	siteWannaSpend       = "wannaspend"
-	siteDatTwenty        = "dattwenty"
-	siteCanopy           = "canopy"
-	siteFiveStar         = "fivestar"
-	siteBoughtItOnce     = "boughtitonce"
-)
+func main() {
 
-func searchx() {
+	c := cron.New(
+		cron.WithLogger(logger.CronLogger{}),
+		cron.WithSeconds(),
+	)
 
-	client := search.NewClient(config.AlgoliaAppID, config.AlgoliaSearch)
+	for _, task := range sites.Sites {
+		// In a func here so `task` gets copied into a new memory location and can not be replaced at a later time
+		func(task sites.Site) {
 
-	index := client.InitIndex("products")
+			_, err := c.AddFunc(task.GetID(), func() {
 
-	fmt.Println(index)
-}
-
-func ScrapeHandler(social bool) {
-
-	// todo, get all items and pass them in so not to add them
-
-	getSingle(social, siteShitYouCanAfford, "http://shityoucanafford.com/")
-	getSingle(social, siteDatTwenty, "http://dattwenty.com/pages/home")
-	getSingle(social, siteWannaSpend, "http://www.wannaspend.com/")
-	getSingle(social, siteCanopy, "https://canopy.co/ajax/merged_feed_products?limit=100")
-	getSingle(social, siteFiveStar, "https://fivestar.io/index-3b0dc4e7b4c5c55e5da4.js")
-	getSingle(social, siteBoughtItOnce, "http://boughtitonce.com/")
+			})
+			if err != nil {
+				logger.Logger.Error("adding cron func")
+			}
+		}(task)
+	}
 }
 
 func getSingle(postToSocial bool, source string, url string) {
@@ -93,7 +83,9 @@ func doCurl(url string) (body string, code int) {
 		logger.Logger.Fatal("", zap.Error(err))
 	}
 
+	//goland:noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
+
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		logger.Logger.Fatal("", zap.Error(err))
