@@ -11,7 +11,6 @@ import (
 
 	"github.com/Jleagle/canihave/pkg/location"
 	"github.com/Jleagle/canihave/pkg/logger"
-	"github.com/Jleagle/canihave/pkg/memcache"
 	"github.com/Jleagle/canihave/pkg/mysql"
 	"github.com/Masterminds/squirrel"
 	"github.com/gofiber/fiber/v2"
