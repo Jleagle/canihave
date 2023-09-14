@@ -15,7 +15,7 @@ require (
 	github.com/dustin/gojson v0.0.0-20160307161227-2e71ec9dd5ad // indirect
 	github.com/garyburd/go-oauth v0.0.0-20180319155456-bca2e7f09a17 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
-	github.com/gofiber/fiber/v2 v2.43.0
+	github.com/gofiber/fiber/v2 v2.49.2
 	github.com/gofiber/template v1.6.12
 	github.com/gosimple/slug v1.9.0
 	github.com/huandu/facebook v2.3.1+incompatible
